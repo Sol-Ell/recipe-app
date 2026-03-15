@@ -1,0 +1,25 @@
+/* 1. On définit les variables globales */
+:root {
+  --color-cream: #FFF9F1;
+  --color-sage: #829B89;
+  --color-input-bg: #f3f7fb;
+  --color-text-dark: #1a1a1a;
+  --color-text-light: #666;
+  --font-main: 'Inter', 'Segoe UI', sans-serif;
+  --font-serif: 'Georgia', serif;
+}
+
+/* 2. On retire les marges par défaut et on bloque le scroll */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Très important pour éviter le scroll */
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Empêche le scroll sur toute l'application */
+  font-family: var(--font-main);
+  background-color: var(--color-cream);
+}
