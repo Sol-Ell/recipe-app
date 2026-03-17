@@ -1,11 +1,11 @@
 import React from 'react';
 
-// On définit ce que notre bouton peut recevoir comme "ordres" (props)
+// defiens what king of buttons it can be 
 interface ButtonProps {
   label: string;
-  onClick?: () => void; // Le '?' veut dire que c'est optionnel
-  type?: 'button' | 'submit' | 'reset'; // On restreint aux types HTML valides
-  variant?: 'primary' | 'outline' | 'google'; // Nos variantes de style
+  onClick?: () => void; 
+  type?: 'button' | 'submit' | 'reset'; // only html type valide 
+  variant?: 'primary' | 'outline' | 'google'; // different kin of style 
   disabled?: boolean;
 }
 
@@ -16,7 +16,7 @@ const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   disabled = false 
 }) => {
-  // On change la classe CSS selon la variante choisie
+  // change the css depending on the style choose 
   const className = `custom-button btn-${variant}`;
 
   return (

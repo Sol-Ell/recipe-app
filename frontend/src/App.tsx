@@ -6,15 +6,15 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Redirige automatiquement la racine vers le login */}
+        {/* open login first */}
         <Route path="/" element={<Navigate to="/login" />} />
         
-        {/* Tes pages */}
+        {/* pages use*/}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
-        {/* Page 404 (Optionnel) */}
-        <Route path="*" element={<h1>Page non trouvée</h1>} />
+        {/* Page 404  */}
+        <Route path="*" element={<h1>Page not found</h1>} />
       </Routes>
     </Router>
   );

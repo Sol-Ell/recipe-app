@@ -1,4 +1,4 @@
-/* 1. On définit les variables globales */
+/* 1. main variable defines */
 :root {
   --color-cream: #FFF9F1;
   --color-sage: #829B89;
@@ -9,7 +9,7 @@
   --font-serif: 'Georgia', serif;
 }
 
-/* 2. On retire les marges par défaut et on bloque le scroll */
+/* 2. take of border */
 * {
   margin: 0;
   padding: 0;
@@ -19,7 +19,7 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  overflow: hidden; /* Empêche le scroll sur toute l'application */
+  overflow: hidden; 
   font-family: var(--font-main);
   background-color: var(--color-cream);
 }

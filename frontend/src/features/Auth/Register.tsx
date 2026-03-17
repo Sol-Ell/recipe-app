@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 
 
-const Login: React.FC = () => {
+const Login: React.FC= () => {
   const navigate = useNavigate();
-  
+
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -15,7 +15,6 @@ const Login: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submit:", { email, password });
-
   };
 
   return (
@@ -60,7 +59,7 @@ const Login: React.FC = () => {
             </div>
 
             <div className="forgot-pw">
-              <a href="">Forgot Password?</a>
+              <a href="#">Forgot Password?</a>
             </div>
 
             <button type="submit" className="btn-signin">Sign in</button>
@@ -76,15 +75,15 @@ const Login: React.FC = () => {
           </form>
 
           <p className="auth-footer">
-          Don't you have an account?{' '}
-            <span className="signup-link" onClick={() => navigate('/register')}>
+          you have an account?{' '}
+            <span className="signup-link" onClick={() => navigate('/login')}>
       Sign up
     </span>
       </p>
         </div>
       </div>
 
-      {/* right */}
+      {/* Right  */}
       <div className="auth-right">
         <div className="image-card"
         style={{backgroundImage: `url(${loginart})`}}
