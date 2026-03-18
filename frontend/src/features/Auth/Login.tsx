@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg"
-import logog from "../../assets/google-logo.png";
-
 import { useNavigate } from 'react-router-dom';
 
 
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  // États typés
+  
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -22,7 +20,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="auth-container">
-      {/* GAUCHE */}
+      {/* Left */}
       <div className="auth-left">
         <div className="auth-content">
           <h1 className="auth-title">Welcome Back</h1>
@@ -71,10 +69,8 @@ const Login: React.FC = () => {
               <span>Or</span>
             </div>
 
-            
-
             <button type="button" className="btn-google">
-              <img src={logog} alt="Google Logo" />
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa/google.svg" alt="" />
               Sign in with Google
             </button>
           </form>
@@ -88,7 +84,7 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* DROITE */}
+      {/* right */}
       <div className="auth-right">
         <div className="image-card"
         style={{backgroundImage: `url(${loginart})`}}

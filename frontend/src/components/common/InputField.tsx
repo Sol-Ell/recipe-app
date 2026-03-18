@@ -27,7 +27,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, type, placeholder, value
           onChange={(e) => onChange(e.target.value)}
         />
         
-        {/* On n'affiche l'œil que si c'est un champ password */}
+        {/* only showing the eys if the field is a password field  */}
         {type === 'password' && (
           <button 
             type="button" 
