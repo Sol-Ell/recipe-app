@@ -1,30 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import './Auth.css';
-import loginart from "../../assets/login-art.jpg"
+import loginart from "../../assets/login-art.jpg";
+import logog from "../../assets/google-logo.png";
+
+
 import { useNavigate } from 'react-router-dom';
 
-
-
-const Login: React.FC= () => {
+const Register: React.FC = () => {
   const navigate = useNavigate();
-  // États typés
+  
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [passwordverif, setPasswdverif] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showPasswordverif, setShowPasswordverif] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submit:", { email, password });
+    console.log("Submit:", { username, email, password });
   };
 
   return (
     <div className="auth-container">
-      {/* GAUCHE */}
+      {/* Left */}
       <div className="auth-left">
         <div className="auth-content">
-          <h1 className="auth-title">Welcome Back</h1>
+          <h1 className="auth-title">Nice to meet you</h1>
           
           <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label>Username</label>
+              <div className="input-wrapper">
+                <input 
+                  type="text"
+                  placeholder="Username123"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                /> 
+              </div>
+            </div>
+
             <div className="input-group">
               <label>Email</label>
               <div className="input-wrapper">
@@ -58,42 +75,56 @@ const Login: React.FC= () => {
               </div>
             </div>
 
-            <div className="forgot-pw">
-              <a href="#">Forgot Password?</a>
+            <div className="input-group">
+              <label>Password Verification</label>
+              <div className="input-wrapper">
+                <input 
+                  type={showPasswordverif ? "text" : "password"} 
+                  placeholder="At least 8 characters" 
+                  value={passwordverif}
+                  onChange={(e) => setPasswdverif(e.target.value)}
+                  required 
+                />
+                <button 
+                  type="button" 
+                  className="eye-button"
+                  onClick={() => setShowPasswordverif(!showPasswordverif)}
+                >
+                  {showPasswordverif ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
-            <button type="submit" className="btn-signin">Sign in</button>
+            <button type="submit" className="btn-signin">Create account</button>
 
             <div className="separator">
               <span>Or</span>
             </div>
 
             <button type="button" className="btn-google">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa/google.svg" alt="" />
-              Sign in with Google
+             <img src={logog} alt="Google Logo" />
+              Sign up with Google
             </button>
           </form>
 
           <p className="auth-footer">
-          you have an account?{' '}
+            Already have an account?{' '}
             <span className="signup-link" onClick={() => navigate('/login')}>
-      Sign up
-    </span>
-      </p>
+              Sign in
+            </span>
+          </p>
         </div>
       </div>
 
-      {/* DROITE */}
+      {/* Right */}
       <div className="auth-right">
-        <div className="image-card"
-        style={{backgroundImage: `url(${loginart})`}}
-        >
-          
-        </div>
+        <div 
+          className="image-card"
+          style={{ backgroundImage: `url(${loginart})` }}
+        />
       </div>
     </div>
   );
 };
 
-export default Login;
-
+export default Register;

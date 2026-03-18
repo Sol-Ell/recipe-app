@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg"
+import logog from "../../assets/google-logo.png";
+
 import { useNavigate } from 'react-router-dom';
 
 
@@ -69,8 +71,10 @@ const Login: React.FC = () => {
               <span>Or</span>
             </div>
 
+            
+
             <button type="button" className="btn-google">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa/google.svg" alt="" />
+              <img src={logog} alt="Google Logo" />
               Sign in with Google
             </button>
           </form>
