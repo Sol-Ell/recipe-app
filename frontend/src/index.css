@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+  /* 1. Couleurs */
+  --color-cream: #FFF9F1;
+  --color-sage: #829B89;
+  --color-sage-hover: #6d8273;
+  --color-input-bg: #f3f7fb;
+  --color-text-dark: #1a1a1a;
+  --color-text-light: #666;
+  
+  /* 2. Polices Figma (Nettoyées des doublons) */
+  --font-main: 'Roboto', sans-serif;
+  --font-serif: 'Fraunces', serif;
+}
+
+/* 3. Reset global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Évite le scroll inutile */
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-main);
+  background-color: var(--color-cream);
+  overflow: hidden; /* Fixe l'écran sur Desktop */
+}
+
+/* 4. Responsive : On autorise le scroll sur mobile */
+@media (max-width: 850px) {
+  html, body, #root {
+    overflow-y: auto; 
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
+/* 5. Styles utilitaires & Hovers */
+a, .signup-link, .forgot-pw {
+  color: var(--color-sage);
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.signup-link:hover, .forgot-pw:hover {
+  filter: brightness(0.8);
+  text-decoration: underline;
+}
+
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  cursor: pointer;
+  filter: brightness(0.9);
+}
+
+button:active {
+  transform: scale(0.98);
+}
