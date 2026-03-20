@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg"
 import logog from "../../assets/google-logo.png";
+import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
 
 
 
-const Login: React.FC = () => {
+const Login: React.FC = ({ setUser }) => {
   const navigate = useNavigate();
   
   const [email, setEmail] = useState<string>('');
@@ -16,6 +17,14 @@ const Login: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+        const res = await axios.post("/api/users/login", formData);
+        localStorage.setItem("token", res.data.token);
+        setUser(res.data);
+        navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed")
+    }
     console.log("Submit:", { email, password });
 
   };

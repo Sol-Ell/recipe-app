@@ -5,13 +5,18 @@ export const protect = async (req, res, next) => {//express middleware which acc
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
        try {
-            token = req.headers.authorization.split("n")[1];
+            token = req.headers.authorization.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET)//
+        
         req.user = await User.findById(decoded.id).select("-password")//To have the user info except the password. the "-" tells to MongoDB to return the information of user except the password field
+        
         return next();
        } catch(err) {
             console.error("Token verification failed: ", err.message);
             return res.status(401).json({message: "Not authorized, token failed"})
        }
+    }
+   if (!token) {
+        return res.status(401).json({ message: "Not authorized, no token found" });
     }
 }

@@ -3,6 +3,7 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg";
 import logog from "../../assets/google-logo.png";
+import api from '../../api';
 
 
 import { useNavigate } from 'react-router-dom';
