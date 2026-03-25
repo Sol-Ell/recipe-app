@@ -2,12 +2,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './features/Auth/Login';
 import Register from './features/Auth/Register';
 import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 
-const App: React.FC = () => {
-  function App() {
+const App : React.FC = () => {
   // On définit les types pour TypeScript (User peut être un objet ou null)
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string>("");
+  console.log(user);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -44,7 +45,7 @@ const App: React.FC = () => {
         
         {/* pages use*/}
         <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<Register setUser={setUser} />} />
         
         {/* Page 404  */}
         <Route path="*" element={<h1>Page not found</h1>} />
