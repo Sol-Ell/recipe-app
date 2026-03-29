@@ -2,21 +2,47 @@ import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg"
 import logog from "../../assets/google-logo.png";
+import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
 
 
-
-const Login: React.FC = () => {
+// 1. Définir l'interface pour les Props en haut
+interface LoginProps {
+  setUser: (user: any) => void;
+}
+const Login: React.FC<LoginProps> = ({ setUser }) => {
   const navigate = useNavigate();
-  
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [formData, setFormData] = useState({
+    email : "",
+    password : "",
 
-  const handleSubmit = (e: React.FormEvent) => {
+  });
+  
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submit:", { email, password });
+    try {
+        const res = await axios.post("/api/users/login", formData);
+        localStorage.setItem("token", res.data.token);
+        console.log(res.data);
+        setUser(res.data);
+        navigate('/');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        // Here TypeScript knows that's a Axios error
+        setError(err.response?.data?.message || "Login failed");
+      } else {
+        // Errors don't come from axios
+        setError("An unexpected error occurred");
+      }
+    };
+    console.log("Submit:", formData);
 
   };
 
@@ -32,10 +58,11 @@ const Login: React.FC = () => {
               <label>Email</label>
               <div className="input-wrapper">
                 <input 
+                  name="email" // INDISPENSABLE pour handleChange
                   type="email" 
                   placeholder="Example@email.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email} // Utiliser formData au lieu de email
+                  onChange={handleChange} // Appeler la fonction qui met à jour l'objet
                   required 
                 />
               </div>
@@ -45,10 +72,11 @@ const Login: React.FC = () => {
               <label>Password</label>
               <div className="input-wrapper">
                 <input 
+                  name="password" // INDISPENSABLE
                   type={showPassword ? "text" : "password"} 
                   placeholder="At least 8 characters" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password} // Utiliser formData
+                  onChange={handleChange} // Appeler la fonction
                   required 
                 />
                 <button 
@@ -64,7 +92,7 @@ const Login: React.FC = () => {
             <div className="forgot-pw">
               <a href="">Forgot Password?</a>
             </div>
-
+            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
             <button type="submit" className="btn-signin">Sign in</button>
 
             <div className="separator">
