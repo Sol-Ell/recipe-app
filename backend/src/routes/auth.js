@@ -1,5 +1,7 @@
 import express from "express";
 import User from '../models/User.js';
+import { getUserProfile } from "../controllers/UserProfile.js";
+
 import jwt from 'jsonwebtoken';
 import { protect } from '../middleware/auth.js';
 
@@ -67,6 +69,8 @@ router.get("/me", protect, async (req, res) => {
 res.status(200).json(req.user)
 });
 
+//Profile Page
+router.get("/profile", protect, getUserProfile);
 
 
 // Generate JWT token
