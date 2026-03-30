@@ -92,7 +92,12 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
             <div className="forgot-pw">
               <a href="">Forgot Password?</a>
             </div>
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+{error && (
+  <div className="error-text-minimal">
+    <span className="dot"></span>
+    {error}
+  </div>
+)}
             <button type="submit" className="btn-signin">Sign in</button>
 
             <div className="separator">
