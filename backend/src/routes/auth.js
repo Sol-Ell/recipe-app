@@ -1,5 +1,6 @@
 import express from "express";
 import User from '../models/User.js';
+import { getUserProfile } from "../controllers/UserProfile.js";
 import jwt from 'jsonwebtoken';
 import { protect } from '../middleware/auth.js';
 
@@ -66,6 +67,9 @@ router.post('/login', async (req, res) => {
 router.get("/me", protect, async (req, res) => {
 res.status(200).json(req.user)
 });
+
+//Profile Page
+router.get("/profile", protect, getUserProfile);
 
 
 
