@@ -63,7 +63,7 @@ const Register: React.FC<RegisterProps> = ({ setUser }) => {
         <div className="auth-content">
           <h1 className="auth-title">Nice to meet you</h1>
           
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+          
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
@@ -135,6 +135,14 @@ const Register: React.FC<RegisterProps> = ({ setUser }) => {
                 </button>
               </div>
             </div>
+
+
+            {error && (
+  <div className="error-text-minimal">
+    <span className="dot"></span>
+    {error}
+  </div>
+)}
 
             <button type="submit" className="btn-signin">Create account</button>
 
