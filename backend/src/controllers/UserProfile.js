@@ -3,7 +3,7 @@ import { request, response } from "express";
 
 export const getUserProfile = async (req, res) => {
   try {
-    //Does the user exist?
+    //Does the user exist? Verify if the user exist
     if (!req.user) {
       return res.status(401).json({ 
         message: "Access Denied: User not identified in the request." 
