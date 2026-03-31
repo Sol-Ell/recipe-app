@@ -24,9 +24,10 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  font-family: var(--font-main);
-  background-color: var(--color-cream);
-  overflow: hidden; /* Fixe l'écran sur Desktop */
+  /* Modifie cette ligne : */
+  overflow-x: hidden; 
+  overflow-y: auto; /* Permet le scroll vertical par défaut */
+  background-color: var(--color-sage);
 }
 
 /* 4. Responsive : On autorise le scroll sur mobile */

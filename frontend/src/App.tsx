@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './features/Auth/Login';
 import Register from './features/Auth/Register';
+import Profile from './features/Profile/Profile'
+import Navbar from './components/common/navbar';
+import Home from './features/Home/Home';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
@@ -39,13 +42,16 @@ const App : React.FC = () => {
   }, []); // Le tableau vide [] assure que l'appel ne se fait qu'au chargement de la page
   return (
     <Router>
+      <Navbar currentUser={user} />
       <Routes>
         {/* open login first */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to="/home" />} />
         
         {/* pages use*/}
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
+        <Route path="/profile/:id" element={<Profile currentUser={user}/>} />
+        <Route path="/home" element={<Home />} />
         
         {/* Page 404  */}
         <Route path="*" element={<h1>Page not found</h1>} />
