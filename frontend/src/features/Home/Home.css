@@ -1,0 +1,43 @@
+.home-page-container {
+  /* Cream background to match the warm aesthetic of the design */
+  background-color: #fcf8f1; 
+  min-height: 100vh;
+  padding: 40px 80px;
+  display: flex;
+  flex-direction: column;
+  /* Vertical spacing between the major sections (Trending vs Followed) */
+  gap: 60px; 
+}
+
+.home-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  /* Elegant font choice for section headers */
+  font-family: 'Fraunces', serif; 
+  font-size: 32px;
+  color: #4a4a4a;
+  letter-spacing: 1px;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+}
+
+.home-recipes-grid {
+  display: grid;
+  /* Fixed 3-column layout as requested in the mockup */
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 30px;
+}
+
+/* Styling for the fallback message when no recipes are available */
+.no-data-msg {
+  font-family: 'Inter', sans-serif;
+  color: #888;
+  /* Centers the message across all three grid columns */
+  grid-column: span 3;
+  text-align: center;
+  padding: 40px;
+}
