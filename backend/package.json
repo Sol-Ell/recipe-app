@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/server.js "
+    "start": "node src/server.js ",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watchAll"
   },
   "type": "module",
   "keywords": [],
@@ -16,5 +17,8 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }
