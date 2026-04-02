@@ -17,7 +17,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   // Dynamic Check: Compare logged-in user ID with the Profile ID in the URL
-  const isOwnProfile = currentUser?._id === id;
+const isOwnProfile = currentUser && id ? currentUser._id === id : false;
 
   // 1. Fetching recipes based on the selected tab and user ID
   useEffect(() => {
@@ -55,8 +55,9 @@ const Profile: React.FC<ProfileProps> = ({ currentUser }) => {
     return colors[Math.abs(hash) % colors.length];
   };
 
+ 
   // --- SKELETON LOADING VIEW ---
-  if (loading) {
+  if (loading || !currentUser) {
     return (
       <div className="profile-page-wrapper">
         <div className="profile-top-background shimmer"></div>
