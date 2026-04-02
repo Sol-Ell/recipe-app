@@ -44,13 +44,18 @@ describe('🧪 Automation Test: User Profile System', () => {
     expect(res.body).not.toHaveProperty('password');
   });
 
-  test('Requirement 2: Fetch OTHERS profile via ID', async () => {
+  test('Requirement 2: Successfully retrieves the information of the specified user', async () => {
     const res = await request(app)
       .get(`/api/users/profile/${otherId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.statusCode).toBe(200);
+
+    expect(res.body._id).toBe(otherId.toString());
     expect(res.body.username).toBe('OtherChef');
+    expect(res.body.email).toBe('other@test.com');
+
+    expect(res.body).not.toHaveProperty('password');
   });
 
   test('Requirement 3: Block unauthorized access', async () => {
