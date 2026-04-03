@@ -44,25 +44,32 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
 
       {/* 3. Right Section: User Profile Trigger */}
       <div className="nav-user-section">
-        {currentUser ? (
-          <div 
-            className="nav-profile-trigger" 
-            onClick={() => navigate(`/profile/${currentUser._id}`)}
-          >
-            {/* Real name from DB instead of "Name" */}
-            <span className="nav-display-name">{currentUser.username}</span>
-            <div className="nav-avatar-circle">
-              {currentUser.avatar ? (
-                <img src={currentUser.avatar} alt="Profile" className="nav-avatar-img" />
-              ) : (
-                <div className="nav-avatar-letter">{getInitials(currentUser.username)}</div>
-              )}
-            </div>
-          </div>
+  {currentUser ? (
+    <div 
+      className="nav-profile-trigger" 
+      onClick={() => {
+        // Sécurité : Si l'ID est manquant, on ne navigue pas ou on rafraîchit
+        if (currentUser._id) {
+          navigate(`/profile/${currentUser._id}`);
+        } else {
+          console.error("ID utilisateur manquant lors de la navigation");
+          window.location.reload(); // Solution de secours
+        }
+      }}
+    >
+      <span className="nav-display-name">{currentUser.username}</span>
+      <div className="nav-avatar-circle">
+        {currentUser.avatar ? (
+          <img src={currentUser.avatar} alt="Profile" className="nav-avatar-img" />
         ) : (
-          <button className="btn-login-small" onClick={() => navigate('/login')}>Login</button>
+          <div className="nav-avatar-letter">{getInitials(currentUser.username)}</div>
         )}
       </div>
+    </div>
+  ) : (
+    <button className="btn-login-small" onClick={() => navigate('/login')}>Login</button>
+  )}
+</div>
     </nav>
   );
 };

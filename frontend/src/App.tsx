@@ -8,52 +8,57 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 const App : React.FC = () => {
-  // On définit les types pour TypeScript (User peut être un objet ou null)
   const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState<string>("");
-  console.log(user);
+  const [loading, setLoading] = useState<boolean>(true); // 1. AJOUT : État de chargement global
 
   useEffect(() => {
     const fetchUser = async () => {
-      // 1. Récupération du token stocké dans le navigateur
       const token = localStorage.getItem("token");
 
       if (token) {
         try {
-          // 2. Appel à l'API backend de ton camarade X
           const res = await axios.get("/api/users/me", {
-            headers: { 
-              Authorization: `Bearer ${token}` 
-            },
+            headers: { Authorization: `Bearer ${token}` },
           });
-
-          // 3. Si ça marche, on stocke les infos de l'utilisateur
           setUser(res.data);
         } catch (err: any) {
-          // 4. En cas d'erreur (token expiré ou invalide), on nettoie
-          setError("Failed to fetch user data");
           localStorage.removeItem("token");
-          console.error("Erreur axios:", err.response?.data || err.message);
+          console.error("Auth error:", err.response?.data || err.message);
         }
       }
+      setLoading(false); // 2. AJOUT : On a fini de vérifier (succès ou échec)
     };
 
     fetchUser();
-  }, []); // Le tableau vide [] assure que l'appel ne se fait qu'au chargement de la page
+  }, []);
+
+  // 3. AJOUT : Si on charge, on affiche un écran d'attente propre
+  // Cela empêche la Navbar et le Profile de s'afficher avec un 'user' à null par erreur
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#F8F9FA' }}>
+        <h2 style={{ color: '#588157', fontFamily: 'Arial' }}>Loading Chef...</h2>
+      </div>
+    );
+  }
+
   return (
     <Router>
+      {/* Maintenant, quand la Navbar s'affiche, user est soit stable, soit null (si non connecté) */}
       <Navbar currentUser={user} />
       <Routes>
-        {/* open login first */}
         <Route path="/" element={<Navigate to="/home" />} />
         
-        {/* pages use*/}
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
-        <Route path="/profile/:id" element={<Profile currentUser={user}/>} />
-        <Route path="/home" element={<Home />} />
         
-        {/* Page 404  */}
+        {/* On garde la key pour forcer le refresh si on change de profil via l'URL */}
+        <Route 
+          path="/profile/:id" 
+          element={<Profile key={window.location.pathname} currentUser={user} />} 
+        />
+        
+        <Route path="/home" element={<Home />} />
         <Route path="*" element={<h1>Page not found</h1>} />
       </Routes>
     </Router>
