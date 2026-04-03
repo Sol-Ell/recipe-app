@@ -1,0 +1,1 @@
+router.get('/profile/:id', protect, getUserById);

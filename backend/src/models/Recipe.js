@@ -5,5 +5,4 @@ const recipeSchema = mongoose.Schema({
 
 const Recipe = mongoose.model('Recipe', recipeSchema);
 
-// C'EST CETTE LIGNE QUI MANQUE :
 export default Recipe;
