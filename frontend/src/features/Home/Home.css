@@ -41,3 +41,26 @@
   text-align: center;
   padding: 40px;
 }
+
+.create-recipe-btn {
+  position: fixed;
+  bottom: 60px;
+  right: 60px;
+  background-color: var(--color-sage);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  height: 60px;
+  width: 60px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: all 0.2s ease;
+}
+
+.create-recipe-btn:hover {
+  background-color: var(--color-sage-hover);
+  transform: scale(1.05);
+}

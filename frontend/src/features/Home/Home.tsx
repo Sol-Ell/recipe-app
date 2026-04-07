@@ -1,10 +1,12 @@
 import React from 'react';
 import RecipeCard from '../../components/common/Recipe';
 import './Home.css';
+import { useNavigate } from 'react-router-dom';
 
 const Home: React.FC = () => {
   // On crée une liste vide ou fictive pour tester le rendu visuel
   const dummyRecipes = [1, 2, 3, 4, 5, 6];
+  const navigate = useNavigate();
 
   return (
     <div className="home-page-container">
@@ -64,6 +66,10 @@ const Home: React.FC = () => {
           ))}
         </div>
       </section>
+        <button className="create-recipe-btn"
+        onClick={()=> navigate ('/create-recipe')}>
+          + 
+        </button>
     </div>
   );
 };
