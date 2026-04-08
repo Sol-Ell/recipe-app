@@ -49,6 +49,7 @@ const App : React.FC = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         
+        {/* pages use*/}
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
         
