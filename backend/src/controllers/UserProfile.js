@@ -31,7 +31,7 @@ export const getUserProfile = async (req, res) => {
     });
   }
 
-  //Connection problem, database down
+  //Connection problem, database is down
   console.error("Detailed server error:", error);
   res.status(500).json({ 
     message: "Internal server error", 
