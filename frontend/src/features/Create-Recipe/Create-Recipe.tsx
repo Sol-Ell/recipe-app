@@ -29,28 +29,31 @@ const RecipeEditor: React.FC = () => {
   // --- Handlers ---
 
   // Handle Image Upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      // Handle Image Upload with TypeScript safety
+ // 1. Unified and Clean Image Upload Handler
 const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files && e.target.files[0]) {
+  const file = e.target.files?.[0]; // Get the first file safely
+  
+  if (file) {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
-      // Check if event.target exists before accessing .result
       const result = event.target?.result;
       if (result) {
-        setRecipe({ ...recipe, image: result as string });
+        console.log("Image successfully loaded!"); // Debugging line
+        setRecipe((prevRecipe) => ({
+          ...prevRecipe,
+          image: result as string, // Store the Base64 string for preview
+        }));
       }
     };
-    
-    reader.readAsDataURL(e.target.files[0]);
+
+    reader.onerror = () => {
+      console.error("Error reading the file.");
+    };
+
+    reader.readAsDataURL(file); // Trigger the reading process
   }
 };
-      reader.readAsDataURL(e.target.files[0]);
-    }
-  };
 
   // Toggle Tags with strict 3/3 limit
   const toggleTag = (list: 'cuisine' | 'dietary', tag: string) => {
