@@ -132,4 +132,3 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
 };
 
 export default Login;
-
