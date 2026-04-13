@@ -62,7 +62,7 @@ const App : React.FC = () => {
           element={<Profile key={window.location.pathname} currentUser={user} />} 
         />
         
-        <Route path="/home" element={<Home />} />
+        <Route path="/home" element={<Home currentUser={user} />} />
         <Route path="*" element={<h1>Page not found</h1>} />
       </Routes>
     </Router>

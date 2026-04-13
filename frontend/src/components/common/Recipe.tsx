@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Recipe.css';
 
-// Icônes SVG
+/**
+ * SVG Icons Components
+ */
 const TimerIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 );
@@ -13,6 +15,7 @@ const UserIcon = () => (
 );
 
 interface RecipeProps {
+  id: string;
   variant: 'my-profile' | 'other-profile' | 'feed';
   title: string;
   image: string;
@@ -21,32 +24,70 @@ interface RecipeProps {
   category: string;
   servings: number;
   rating?: number;
+  isFavoriteInitial?: boolean;
+  currentUser: any; // Must match the object from App.tsx/Navbar
+  onOpenRecipeModal: (id: string) => void; 
 }
 
-const RecipeCard: React.FC<RecipeProps> = ({ variant, title, image, authorName, time, category, servings, rating}) => {
+const RecipeCard: React.FC<RecipeProps> = ({ 
+  id, variant, title, image, authorName, time, category, servings, rating, 
+  isFavoriteInitial, currentUser, onOpenRecipeModal 
+}) => {
+  
+  const [isFavorite, setIsFavorite] = useState(isFavoriteInitial || false);
+
+  /**
+   * Handles favorite toggle logic.
+   * Checks if currentUser exists (is logged in).
+   */
+  const handleHeartClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevents opening the recipe modal
+
+    if (!currentUser) {
+      window.alert("Please login first to use favorites!");
+      return;
+    }
+
+    const newStatus = !isFavorite;
+    setIsFavorite(newStatus);
+    
+    // API Call would go here: 
+    // console.log(`Recipe ${id} favorite status: ${newStatus}`);
+  };
+
+  const handleCardClick = () => {
+    onOpenRecipeModal(id);
+  };
+
   return (
-    <div className="recipe-card-container">
+    <div className="recipe-card-container" onClick={handleCardClick}>
       
-      {/* 1. Header (Seulement pour la Home/Feed) */}
+      {/* 1. Author Header - Feed view only */}
       {variant === 'feed' && (
         <div className="card-author-header">
           <div className="author-avatar-circle">
-             <UserIcon />
+            <UserIcon />
           </div>
           <span className="author-name">{authorName || "Anonymous"}</span>
         </div>
       )}
 
-      {/* 2. Image Image Card */}
+      {/* 2. Recipe Image with Favorite Overlay */}
       <div className="recipe-image-box">
         <img src={image} alt={title} />
-        {/* Coeur (Seulement si PAS mon profil) */}
+        
         {variant !== 'my-profile' && (
-          <button className="like-heart-btn">❤️</button>
+          <button 
+            className={`like-heart-btn ${isFavorite ? 'active' : ''}`} 
+            onClick={handleHeartClick}
+            title={currentUser ? "Favorite" : "Login to favorite"}
+          >
+            {isFavorite ? '❤️' : '🤍'}
+          </button>
         )}
       </div>
 
-      {/* 3. Content */}
+      {/* 3. Card Content */}
       <div className="recipe-body">
         <h3 className="recipe-title">{title}</h3>
         
@@ -62,12 +103,16 @@ const RecipeCard: React.FC<RecipeProps> = ({ variant, title, image, authorName, 
           </div>
         </div>
 
-        {/* 4. Stars (Seulement pour Other Profile et Feed) */}
+        {/* 4. Rating Stars */}
         {rating && (
-        <div className="recipe-stars">
-          {"⭐".repeat(rating)}
-        </div>
-      )}
+          <div className="recipe-stars">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className={i < rating ? "star-filled" : "star-empty"}>
+                {i < rating ? '★' : '☆'}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

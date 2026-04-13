@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import RecipeCard from '../../components/common/Recipe';
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
 
-const Home: React.FC = () => {
+// 1. Define the props interface
+interface HomeProps {
+  currentUser: any; 
+}
+
+// 2. IMPORTANT: Pass the interface to React.FC and destructure currentUser
+const Home: React.FC<HomeProps> = ({ currentUser }) => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   
-  // PROFESSIONAL APPROACH: Mocking the Auth state
-  // This will be replaced by "const { isAuthenticated } = useAuth();" later
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Check for a token in local storage (standard way to handle JWT)
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
+  // NOTE: We removed the local useState and useEffect for currentUser 
+  // because we now get it directly from App.tsx via props!
 
   const dummyRecipes = [1, 2, 3, 4, 5, 6];
 
   /**
    * Logic to handle recipe creation access
-   * If not logged in, show the requirement modal
    */
   const handleCreateClick = () => {
-    if (isAuthenticated) {
+    if (currentUser) {
       navigate('/create-recipe');
     } else {
       setShowAuthModal(true);
@@ -33,38 +31,32 @@ const Home: React.FC = () => {
 
   return (
     <div className="home-page-container">
-      {/* SECTIONS */}
       <section className="home-section">
         <h2 className="section-title">TRENDING RECIPES</h2>
         <div className="home-recipes-grid">
           {dummyRecipes.map((i) => (
             <RecipeCard 
               key={`trending-${i}`}
+              id={`recipe-${i}`}
               variant="feed"
               title="Big and Juicy Wagyu Beef Cheeseburger"
               time="30 Minutes"
               category="Snack"
               servings={4}
               rating={5}
+              // 3. Pass the currentUser received from App.tsx down to the card
+              currentUser={currentUser} 
               image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+              onOpenRecipeModal={(id) => console.log("Recipe Modal ID:", id)}
             />
           ))}
         </div>
       </section>
 
-      {/* ADDITIONAL SECTIONS (FOLLOWS / RECOMMENDED) */}
-      {/* ... (Keep your existing map logic here) */}
+      {/* Floating Button */}
+      <button className="create-recipe-btn" onClick={handleCreateClick}> + </button>
 
-      {/* FLOATING ACTION BUTTON (FAB) */}
-      <button 
-        className="create-recipe-btn" 
-        onClick={handleCreateClick}
-        aria-label="Create new recipe"
-      >
-        + 
-      </button>
-
-      {/* AUTHENTICATION MODAL */}
+      {/* Auth Modal */}
       {showAuthModal && (
         <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
           <div className="auth-modal-content" onClick={(e) => e.stopPropagation()}>
