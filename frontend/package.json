@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "test": "jest"
   },
   "proxy": "http://localhost:5000",
   "dependencies": {
-    "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "axios": "^1.13.6",
@@ -28,5 +28,16 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "text-encoding": "^0.7.0",
+    "ts-jest": "^29.4.6"
   }
 }
