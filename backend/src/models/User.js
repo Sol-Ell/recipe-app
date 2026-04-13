@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    savedRecipes: [{type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
+    savedRecipes: [{type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],//Reference from the /models/Recipe.js for saving the recipe
     password: {
         type: String,
         required: true,
