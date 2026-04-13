@@ -1,6 +1,6 @@
 import Recipe from '../models/Recipe.js';
 
-// @desc    Get recipes created by a specific user
+// Get recipes created by a specific user
 export const getUserRecipes = async (req, res) => {
   try {
     // On cherche les recettes où l'auteur correspond à l'ID dans l'URL
@@ -11,7 +11,7 @@ export const getUserRecipes = async (req, res) => {
   }
 };
 
-// @desc    Get recipes liked by the logged-in user
+// Get recipes liked by the logged-in user
 export const getMyLikedRecipes = async (req, res) => {
   try {
     // On cherche les recettes où l'ID de l'utilisateur est présent dans le tableau 'likes'
@@ -22,7 +22,7 @@ export const getMyLikedRecipes = async (req, res) => {
   }
 };
 
-// @desc    Get recipes completed by the logged-in user
+// Get recipes completed by the logged-in user
 export const getMyDoneRecipes = async (req, res) => {
   try {
     // Supposons qu'il y a un champ 'completedBy' ou similaire dans ton modèle
