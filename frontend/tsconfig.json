@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es5",
+    "ignoreDeprecations": "6.0",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -14,7 +15,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"  // <-- C'EST CETTE LIGNE QUI MANQUE OU QUI EST MAL RÉGLÉE
+    "jsx": "react-jsx",  // <-- C'EST CETTE LIGNE QUI MANQUE OU QUI EST MAL RÉGLÉE
+    "types": ["node", "jest", "@testing-library/jest-dom"]
   },
   "include": ["src"]
 }
