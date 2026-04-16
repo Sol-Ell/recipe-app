@@ -1,75 +1,114 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react'; // Ajout de useState et useRef
 import { useNavigate } from 'react-router-dom';
 import './navbar.css';
+import logo from '../../assets/Wrap de kebab savoureux et coloré.png'
 
 interface NavbarProps {
-  currentUser: any; // The logged-in user from App.tsx
+  currentUser: any;
+  onLogout: () => void; // On ajoute cette prop pour gérer la déconnexion
 }
 
-const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
+const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout }) => {
   const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Helper function to get initials if no avatar is present
+  const handleSearch = (e: React.KeyboardEvent) => {
+  if (e.key === 'Enter' && searchTerm.trim() !== "") {
+    navigate(`/search/${searchTerm}`); // Redirection vers la page de recherche
+    setSearchTerm(""); // Optionnel : vide la barre après recherche
+  }
+};
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const getInitials = (name: string) => {
     if (!name) return 'U';
     return name.charAt(0).toUpperCase();
   };
 
+  const handleLogout = () => {
+    onLogout();
+    setShowDropdown(false);
+    navigate('/login');
+  };
+
   return (
     <nav className="main-navbar">
-      {/* Left Section: Logo */}
       <div className="nav-logo-section" onClick={() => navigate('/')}>
-        
-        <div className="logo-text">
-          THIS IS<br /><span>MY LOGO</span>
-        </div>
+        <img 
+          src={logo} // Displaying the tacos logo
+          alt="Recipe App Logo" 
+          className="navbar-tacos-logo" // New class for styling
+        />
       </div>
 
-      {/* 2. Middle Section: Search Bar (as designed) */}
       <div className="nav-search-section">
         <div className="search-wrapper">
           <span className="search-icon">🔍</span>
-          <input type="text" placeholder="Search ..." />
-          {/* Add the specific filter icon from your design */}
+                 <input 
+                   type="text" 
+                   placeholder="Search ..." 
+                   value={searchTerm}
+                   onChange={(e) => setSearchTerm(e.target.value)}
+                   onKeyDown={handleSearch}
+                  />
           <button className="filter-icon-btn">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 4.5H15M3 9H15M3 13.5H15" stroke="#3A5A40" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="6" cy="4.5" r="1.5" fill="white" stroke="#3A5A40" strokeWidth="1.5"/>
-              <circle cx="12" cy="9" r="1.5" fill="white" stroke="#3A5A40" strokeWidth="1.5"/>
-              <circle cx="9" cy="13.5" r="1.5" fill="white" stroke="#3A5A40" strokeWidth="1.5"/>
-            </svg>
           </button>
         </div>
       </div>
 
-      {/* 3. Right Section: User Profile Trigger */}
-      <div className="nav-user-section">
-  {currentUser ? (
-    <div 
-      className="nav-profile-trigger" 
-      onClick={() => {
-        // Sécurité : Si l'ID est manquant, on ne navigue pas ou on rafraîchit
-        if (currentUser._id) {
-          navigate(`/profile/${currentUser._id}`);
-        } else {
-          console.error("ID utilisateur manquant lors de la navigation");
-          window.location.reload(); // Solution de secours
-        }
-      }}
-    >
-      <span className="nav-display-name">{currentUser.username}</span>
-      <div className="nav-avatar-circle">
-        {currentUser.avatar ? (
-          <img src={currentUser.avatar} alt="Profile" className="nav-avatar-img" />
+      <div className="nav-user-section" ref={dropdownRef}>
+        {currentUser ? (
+          <>
+            <div className="nav-profile-trigger" onClick={() => setShowDropdown(!showDropdown)}>
+              <span className="nav-display-name">{currentUser.username}</span>
+              <div className="nav-avatar-circle">
+                {currentUser.avatar ? (
+                  <img src={currentUser.avatar} alt="Profile" className="nav-avatar-img" />
+                ) : (
+                  <div className="nav-avatar-letter">{getInitials(currentUser.username)}</div>
+                )}
+              </div>
+            </div>
+
+            {/* DROPDOWN MENU - Style match with your image */}
+            {showDropdown && (
+              <div className="nav-dropdown-menu">
+                <div className="dropdown-item" onClick={() => { navigate(`/profile/${currentUser._id}`); setShowDropdown(false); }}>
+                  Profile
+                </div>
+                <div className="dropdown-item" onClick={() => { navigate('/create-recipe'); setShowDropdown(false); }}>
+                  Create A Recipe
+                </div>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-item logout-item" onClick={handleLogout}>
+                  Logout 
+                  <span className="logout-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="nav-avatar-letter">{getInitials(currentUser.username)}</div>
+          <button className="btn-login-small" onClick={() => navigate('/login')}>Login</button>
         )}
       </div>
-    </div>
-  ) : (
-    <button className="btn-login-small" onClick={() => navigate('/login')}>Login</button>
-  )}
-</div>
     </nav>
   );
 };

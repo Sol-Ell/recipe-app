@@ -5,12 +5,17 @@ import Profile from './features/Profile/Profile'
 import Navbar from './components/common/navbar';
 import Home from './features/Home/Home';
 import Create from './features/Create-Recipe/Create-Recipe'
+import SearchPage from './features/SearchPage/SearchPage';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 const App : React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true); // 1. AJOUT : État de chargement global
+   const handleLogout = () => {
+    localStorage.removeItem('token'); // Supprime le JWT
+    setUser(null);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -46,7 +51,7 @@ const App : React.FC = () => {
   return (
     <Router>
       {/* Maintenant, quand la Navbar s'affiche, user est soit stable, soit null (si non connecté) */}
-      <Navbar currentUser={user} />
+        <Navbar currentUser={user} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         
@@ -54,6 +59,8 @@ const App : React.FC = () => {
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
         <Route path="/create-recipe" element={<Create />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/search/:query" element={<SearchPage />} />
 
         
         {/* On garde la key pour forcer le refresh si on change de profil via l'URL */}
