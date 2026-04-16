@@ -10,7 +10,8 @@ const Home: React.FC = () => {
   // PROFESSIONAL APPROACH: Mocking the Auth state
   // This will be replaced by "const { isAuthenticated } = useAuth();" later
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
+  const [sortType, setSortType] = useState<string>('rating'); 
+  
   useEffect(() => {
     // Check for a token in local storage (standard way to handle JWT)
     const token = localStorage.getItem('token');
@@ -31,12 +32,34 @@ const Home: React.FC = () => {
     }
   };
 
+  const sortedRecipes = [...dummyRecipes].sort((a, b) => {
+  if (sortType === 'rating') {
+    return b - a; // rating sort
+  }
+  if (sortType === 'time') {
+    return a - b; // time sort
+  }
+  return 0;
+});
+
   return (
     <div className="home-page-container">
       {/* SECTIONS */}
       <section className="home-section">
-        <h2 className="section-title">TRENDING RECIPES</h2>
-        <div className="home-recipes-grid">
+  <div className="section-header">
+    <h2 className="section-title">TRENDING RECIPES</h2>
+
+    <select 
+      value={sortType} 
+      onChange={(e) => setSortType(e.target.value)}
+      className="sort-select"
+    >
+      <option value="rating">Sort by Rating</option>
+      <option value="time">Sort by Time</option>
+    </select>
+  </div>
+
+  <div className="home-recipes-grid">
           {dummyRecipes.map((i) => (
             <RecipeCard 
               key={`trending-${i}`}
