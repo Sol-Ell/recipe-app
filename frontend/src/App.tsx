@@ -11,11 +11,15 @@ import React, { useState, useEffect } from 'react';
 const App : React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true); // 1. AJOUT : État de chargement global
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Supprime le JWT
+    setUser(null);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
-
+      
       if (token) {
         try {
           const res = await axios.get("/api/users/me", {
@@ -46,7 +50,7 @@ const App : React.FC = () => {
   return (
     <Router>
       {/* Maintenant, quand la Navbar s'affiche, user est soit stable, soit null (si non connecté) */}
-      <Navbar currentUser={user} />
+      <Navbar currentUser={user} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         
