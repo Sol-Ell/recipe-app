@@ -1,0 +1,202 @@
+/* L'overlay qui prend tout l'écran */
+.rd-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px); /* Effet flou moderne */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Toujours au-dessus de tout */
+  padding: 20px;
+}
+
+/* La boîte du Modal */
+.rd-modal {
+  background: #ffffff;
+  width: 95%;
+  max-width: 1100px;
+  height: 85vh;
+  border-radius: 30px;
+  position: relative;
+  overflow: hidden; /* Pour que l'image ne dépasse pas des coins arrondis */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: modalScale 0.3s ease-out;
+}
+
+/* Grille 50/50 */
+.rd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  height: 100%;
+}
+
+/* Côté gauche : Image */
+.rd-image-side {
+  position: relative;
+  height: 100%;
+}
+
+.rd-image-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rd-badge {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  background: #588157;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+/* Côté droit : Texte */
+.rd-info-side {
+  padding: 50px;
+  overflow-y: auto;
+  background: white;
+  color: #344e41;
+}
+
+.rd-info-side h1 {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  color: #3a5a40;
+  line-height: 1.1;
+}
+
+.rd-author {
+  font-size: 1.1rem;
+  color: #a3b18a;
+  margin-bottom: 40px;
+}
+
+.rd-author span {
+  color: #344e41;
+  font-weight: 800;
+}
+
+/* Sections Ingrédients & Steps */
+.rd-details h3 {
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.rd-details ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 40px;
+}
+
+.rd-details li {
+  padding: 10px 0;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+.rd-details li::before {
+  content: "•";
+  color: #588157;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.rd-step-section {
+  margin-bottom: 30px;
+}
+
+.rd-step-section h4 {
+  color: #588157;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+/* Bouton Fermer */
+.rd-close-btn {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  width: 45px;
+  height: 45px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 2rem;
+  line-height: 45px;
+  cursor: pointer;
+  z-index: 10001;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.rd-close-btn:hover {
+  transform: scale(1.1);
+  color: #e76f51;
+}
+
+/* Animation d'ouverture */
+@keyframes modalScale {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .rd-grid { grid-template-columns: 1fr; }
+  .rd-image-side { height: 300px; }
+  .rd-modal { height: 95vh; }
+}
+.rd-tags-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0 30px 0;
+}
+
+.rd-tag-item {
+  display: inline-flex;
+  align-items: center;
+  background: #fdfdfd;
+  color: #4a6741;
+  padding: 6px 16px;
+  border-radius: 100px; /* Bordure totalement arrondie */
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid #eef2ee;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: all 0.25s ease;
+  cursor: default;
+}
+
+.rd-tag-item:hover {
+  background: #588157;
+  color: #ffffff;
+  border-color: #588157;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(88, 129, 87, 0.2);
+}
+
+.rd-tag-dot {
+  margin-right: 4px;
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+/* On change un peu la couleur du Chef pour que les tags ressortent mieux */
+.rd-author {
+  margin-bottom: 5px;
+  color: #888;
+  font-size: 0.95rem;
+}

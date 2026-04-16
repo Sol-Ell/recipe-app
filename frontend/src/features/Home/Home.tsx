@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import RecipeCard from '../../components/common/Recipe';
+import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal';
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -68,6 +69,14 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* RECIPE DETAIL MODAL - Moved inside the return */}
+      {selectedRecipe && (
+        <RecipeDetailModal 
+          recipe={selectedRecipe} 
+          onClose={() => setSelectedRecipe(null)} 
+        />
       )}
     </div>
   );
