@@ -11,11 +11,38 @@ export const getUserRecipes = async (req, res) => {
   }
 };
 
+export const getRecipesCategory = async (req, res) =>{ //Get Category and filter 
+  try{
+    const {category, q} = req.query;
+
+    let filter = {};
+
+    if(category){
+      //category manage
+      const allowedCategories = [
+      "Appetizer", "Main Course", "Dessert", "Vegetarian",
+     ];
+      if(!allowedCategories.includes(category)){
+        return res.status(400).json({ message: "Invalid category" });
+      }
+      filter.category = category;
+    }
+    //search manager
+    if (q){
+      filter.title = { $regex: q, $options: "i" }
+    }
+    const recipes = await Recipe.find(filter).populate("author", "username");
+    res.status(200).json(recipes);
+    } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get recipes liked by the logged-in user
 export const getMyLikedRecipes = async (req, res) => {
   try {
     // On cherche les recettes où l'ID de l'utilisateur est présent dans le tableau 'likes'
-    const recipes = await Recipe.find({ likes: req.user });
+    const recipes = await Recipe.find({ likes: req.user._id });
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération des favoris" });
@@ -26,7 +53,7 @@ export const getMyLikedRecipes = async (req, res) => {
 export const getMyDoneRecipes = async (req, res) => {
   try {
     // Supposons qu'il y a un champ 'completedBy' ou similaire dans ton modèle
-    const recipes = await Recipe.find({ completedBy: req.user });
+    const recipes = await Recipe.find({ completedBy: req.user._id });
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération des recettes terminées" });

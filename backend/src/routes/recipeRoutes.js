@@ -7,6 +7,7 @@ import {
 import { protect } from '../middleware/auth.js';
 import Recipe from "../models/Recipe.js";
 import User from "../models/User.js";
+import { getRecipesCategory } from '../controllers/recipeControllers.js';
 
 const router = express.Router();
 
@@ -21,6 +22,9 @@ router.get('/my-likes', protect, getMyLikedRecipes);
 // Retrieve my completed recipes (Private)
 // URL: /api/recipes/my-done
 router.get('/my-done', protect, getMyDoneRecipes);
+
+//Retrieve the recipes's category
+router.get("/", protect, getRecipesCategory);
 
 //return all recipes it can find in the database
 router.get("/", protect, async (req, res) => {
