@@ -12,14 +12,6 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout }) => {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSearch = (e: React.KeyboardEvent) => {
-  if (e.key === 'Enter' && searchTerm.trim() !== "") {
-    navigate(`/search/${searchTerm}`); // Redirection vers la page de recherche
-    setSearchTerm(""); // Optionnel : vide la barre après recherche
-  }
-};
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -56,14 +48,9 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout }) => {
       <div className="nav-search-section">
         <div className="search-wrapper">
           <span className="search-icon">🔍</span>
-                 <input 
-                   type="text" 
-                   placeholder="Search ..." 
-                   value={searchTerm}
-                   onChange={(e) => setSearchTerm(e.target.value)}
-                   onKeyDown={handleSearch}
-                  />
+          <input type="text" placeholder="Search ..." />
           <button className="filter-icon-btn">
+             {/* Ton SVG filter... */}
           </button>
         </div>
       </div>
