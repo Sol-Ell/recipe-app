@@ -1,136 +1,140 @@
-/* ROOT CONTAINER */
 .recipe-card-container {
-    background-color: #E8F7F9; /* Figma Light Blue */
-    border-radius: 25px;
-    padding: 12px;
-    width: 280px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    cursor: pointer; /* Pointer for the whole card */
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    user-select: none; /* Avoid text highlighting on double click */
+  background-color: #E8F7F9; /* Ton bleu Figma */
+  border-radius: 25px;
+  padding: 12px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s ease;
+  cursor: pointer;
 }
 
 .recipe-card-container:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
 }
 
-/* AUTHOR HEADER (Feed only) */
+/* Header Utilisateur */
 .card-author-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
 }
 
-.author-avatar-circle {
-    width: 28px;
-    height: 28px;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: white;
-    color: var(--color-sage);
+/* Avatar - On gère l'image ET l'icône par défaut */
+.author-avatar-img, .author-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  color: #666;
 }
 
 .author-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #444;
+  font-size: 16px;
+  font-weight: 500;
+  color: #444;
 }
 
-/* IMAGE BOX & OVERLAY */
+/* Image et Bouton Like */
 .recipe-image-box {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    border-radius: 20px;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 200px; /* Un peu plus haut pour le look burger */
 }
 
 .recipe-image-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
 }
 
-/* HEART BUTTON FIX */
-.like-heart-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    cursor: pointer !important; /* Force pointer to avoid text cursor */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 10; /* Ensure it stays above the image click area */
+/* Le bouton Like Blanc avec le petit coeur rouge */
+.card-like-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
 }
 
-.like-heart-btn:hover {
-    transform: scale(1.15);
+.card-like-btn:hover {
+  transform: scale(1.1);
 }
 
-.like-heart-btn:active {
-    transform: scale(0.9);
+/* Icône coeur à l'intérieur */
+.heart-icon-svg {
+  width: 20px;
+  height: 20px;
+  fill: #FF6B6B; /* Corail Figma */
+  stroke: #FF6B6B;
 }
 
-/* BODY CONTENT */
+/* État quand pas liké (optionnel, selon ton JS) */
+.card-like-btn:not(.active) .heart-icon-svg {
+  fill: none;
+  stroke: #FF6B6B;
+}
+
+/* Titre de la recette */
 .recipe-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 5px 0 8px 0;
-    color: #1a1a1a;
-    line-height: 1.3;
-    /* Limit title to 2 lines for consistency */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 5px 0 5px 0;
+  color: #1a1a1a;
+  line-height: 1.2;
 }
 
+/* Stats (Temps, Catégorie, Pers) */
 .recipe-stats-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto; /* Push stats to bottom of content area */
+  display: flex;
+  gap: 12px;
+  margin-bottom: 5px;
 }
 
 .stat {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: #666;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7d858d;
 }
 
+/* Icônes noires comme sur l'image */
 .stat svg {
-    color: var(--color-sage); /* Use your sage variable */
+  color: #000;
 }
 
-/* STAR RATING */
+/* Étoiles de notation Corail */
 .recipe-stars {
-    display: flex;
-    gap: 3px;
-    margin-top: 8px;
+  display: flex;
+  gap: 2px;
+  margin-top: 5px;
 }
 
 .star-filled {
-    color: #FF6B6B; /* Figma Coral Red */
-    font-size: 16px;
+  color: #FF6B6B; /* Corail fidèle à l'image */
+  font-size: 20px;
 }
 
 .star-empty {
-    color: #D1D1D1;
-    font-size: 16px;
+  color: #ffdce0; /* Rouge très pâle pour les étoiles vides */
+  font-size: 20px;
 }
