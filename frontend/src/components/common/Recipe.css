@@ -1,22 +1,20 @@
-/* RecipeCard.css - Styles for the reusable recipe card */
-
 .recipe-card-container {
-  background-color: #E8F7F9; /* Light blue background from Figma */
-  border-radius: 25px; /* Generous rounded corners */
+  background-color: #E8F7F9; /* Ton bleu Figma */
+  border-radius: 25px;
   padding: 12px;
   width: 280px;
-  font-family: var(--font-main);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   transition: transform 0.2s ease;
+  cursor: pointer;
 }
 
 .recipe-card-container:hover {
-  transform: translateY(-5px); /* Small lift effect on hover */
+  transform: translateY(-5px);
 }
 
-/* User Header (Visible only on the Feed variant) */
+/* Header Utilisateur */
 .card-author-header {
   display: flex;
   align-items: center;
@@ -24,89 +22,119 @@
   margin-bottom: 5px;
 }
 
-.author-avatar-circle {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #999;
+/* Avatar - On gère l'image ET l'icône par défaut */
+.author-avatar-img, .author-avatar-circle {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  object-fit: cover;
+  background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: white;
+  border: 1px solid #ccc;
+  color: #666;
 }
 
 .author-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  color: #333;
+  color: #444;
 }
 
-/* Image section with Heart button */
+/* Image et Bouton Like */
 .recipe-image-box {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 200px; /* Un peu plus haut pour le look burger */
 }
 
 .recipe-image-box img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Prevents image distortion */
+  object-fit: cover;
   border-radius: 20px;
 }
 
-.like-heart-btn {
+/* Le bouton Like Blanc avec le petit coeur rouge */
+.card-like-btn {
   position: absolute;
   top: 10px;
   right: 10px;
   background: white;
   border: none;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
 }
 
-/* Content section (Title and Stats) */
+.card-like-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Icône coeur à l'intérieur */
+.heart-icon-svg {
+  width: 20px;
+  height: 20px;
+  fill: #FF6B6B; /* Corail Figma */
+  stroke: #FF6B6B;
+}
+
+/* État quand pas liké (optionnel, selon ton JS) */
+.card-like-btn:not(.active) .heart-icon-svg {
+  fill: none;
+  stroke: #FF6B6B;
+}
+
+/* Titre de la recette */
 .recipe-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 5px 0 10px 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 5px 0 5px 0;
   color: #1a1a1a;
   line-height: 1.2;
 }
 
+/* Stats (Temps, Catégorie, Pers) */
 .recipe-stats-row {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 5px;
 }
 
 .stat {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-size: 12px;
-  color: #666;
+  font-weight: 600;
+  color: #7d858d;
 }
 
-/* Icons color logic using your Sage Green variable */
+/* Icônes noires comme sur l'image */
 .stat svg {
-  color: var(--color-sage);
+  color: #000;
 }
 
-/* Stars rating section */
+/* Étoiles de notation Corail */
 .recipe-stars {
   display: flex;
   gap: 2px;
   margin-top: 5px;
 }
 
-.star-red {
-  color: #FF6B6B; /* Red/Coral color for Figma stars */
-  font-size: 18px;
+.star-filled {
+  color: #FF6B6B; /* Corail fidèle à l'image */
+  font-size: 20px;
+}
+
+.star-empty {
+  color: #ffdce0; /* Rouge très pâle pour les étoiles vides */
+  font-size: 20px;
 }
