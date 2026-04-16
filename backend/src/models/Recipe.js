@@ -8,11 +8,14 @@ const recipeSchema = mongoose.Schema({
     trim: true,
     minlength: [3, "Le titre doit avoir au moins 3 caractères"]
   },
+<<<<<<< REA-81-create-category-filters-appetizer-main-course-d
+=======
   servings: {
     type: Number,
     required: true,
     min: [1, "Servings must be at least 1"]
   },
+>>>>>>> main
   // Critère : ingredients (Array non vide)
   ingredients: {
     type: [
