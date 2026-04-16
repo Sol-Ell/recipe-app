@@ -1,0 +1,20 @@
+.query-highlight {
+  color: #588157; /* Ton vert fétiche */
+  font-style: italic;
+  margin-left: 10px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* On réutilise les styles de la grid de la Home pour garder la cohérence */
+.home-recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 20px;
+}
