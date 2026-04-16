@@ -5,6 +5,7 @@ import Profile from './features/Profile/Profile'
 import Navbar from './components/common/navbar';
 import Home from './features/Home/Home';
 import Create from './features/Create-Recipe/Create-Recipe'
+import SearchPage from './features/SearchPage/SearchPage';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
@@ -58,6 +59,8 @@ const App : React.FC = () => {
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
         <Route path="/create-recipe" element={<Create />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/search/:query" element={<SearchPage />} />
 
         
         {/* On garde la key pour forcer le refresh si on change de profil via l'URL */}
