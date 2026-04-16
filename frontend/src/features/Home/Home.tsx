@@ -1,24 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import RecipeCard from '../../components/common/Recipe';
 import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal';
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
 
-const Home: React.FC = () => {
+// 1. Define the props interface
+interface HomeProps {
+  currentUser: any; 
+}
+
+// 2. IMPORTANT: Pass the interface to React.FC and destructure currentUser
+const Home: React.FC<HomeProps> = ({ currentUser }) => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
+  
+  // NOTE: We removed the local useState and useEffect for currentUser 
+  // because we now get it directly from App.tsx via props!
 
   const dummyRecipes = [1, 2, 3, 4, 5, 6];
 
+  /**
+   * Logic to handle recipe creation access
+   */
   const handleCreateClick = () => {
-    if (isAuthenticated) {
+    if (currentUser) {
       navigate('/create-recipe');
     } else {
       setShowAuthModal(true);
@@ -30,50 +35,29 @@ const Home: React.FC = () => {
       <section className="home-section">
         <h2 className="section-title">TRENDING RECIPES</h2>
         <div className="home-recipes-grid">
-          {dummyRecipes.map((i) => {
-            // We define a mock object to fill the modal with data
-            const recipeData = {
-              _id: `recipe-${i}`,
-              title: "Big and Juicy Wagyu Beef Cheeseburger",
-              imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
-              cookingTime: 30,
-              category: "Snack",
-              servings: 4,
-              ingredients: ["Wagyu Beef", "Brioche Bun", "Cheddar Cheese", "Onions", "Secret Sauce"],
-              steps: ["Grill the wagyu patty", "Toast the brioche buns", "Assemble with cheese and sauce"],
-              author: { username: "ChefElio" }
-            };
-
-            return (
-              <div 
-                key={`trending-${i}`} 
-                onClick={() => setSelectedRecipe(recipeData)} 
-                style={{ cursor: 'pointer' }}
-              >
-                <RecipeCard 
-                  variant="feed"
-                  title={recipeData.title}
-                  time="30 Minutes"
-                  category={recipeData.category}
-                  servings={recipeData.servings}
-                  rating={5}
-                  image={recipeData.imageUrl}
-                />
-              </div>
-            );
-          })}
+          {dummyRecipes.map((i) => (
+            <RecipeCard 
+              key={`trending-${i}`}
+              id={`recipe-${i}`}
+              variant="feed"
+              title="Big and Juicy Wagyu Beef Cheeseburger"
+              time="30 Minutes"
+              category="Snack"
+              servings={4}
+              rating={5}
+              // 3. Pass the currentUser received from App.tsx down to the card
+              currentUser={currentUser} 
+              image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+              onOpenRecipeModal={(id) => console.log("Recipe Modal ID:", id)}
+            />
+          ))}
         </div>
       </section>
 
-      <button 
-        className="create-recipe-btn" 
-        onClick={handleCreateClick}
-        aria-label="Create new recipe"
-      >
-        + 
-      </button>
+      {/* Floating Button */}
+      <button className="create-recipe-btn" onClick={handleCreateClick}> + </button>
 
-      {/* AUTH MODAL */}
+      {/* Auth Modal */}
       {showAuthModal && (
         <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
           <div className="auth-modal-content" onClick={(e) => e.stopPropagation()}>
