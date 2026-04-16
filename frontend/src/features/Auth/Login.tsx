@@ -32,7 +32,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
         localStorage.setItem("token", res.data.token);
         console.log(res.data);
         setUser(res.data);
-        navigate('/');
+        window.location.href = '/';
     } catch (err) {
       if (axios.isAxiosError(err)) {
         // Here TypeScript knows that's a Axios error

@@ -7,7 +7,10 @@ import {
 import { protect } from '../middleware/auth.js';
 import Recipe from "../models/Recipe.js";
 import User from "../models/User.js";
+<<<<<<< REA-81-create-category-filters-appetizer-main-course-d
 import { getRecipesCategory } from '../controllers/recipeControllers.js';
+=======
+>>>>>>> main
 
 const router = express.Router();
 
@@ -23,9 +26,12 @@ router.get('/my-likes', protect, getMyLikedRecipes);
 // URL: /api/recipes/my-done
 router.get('/my-done', protect, getMyDoneRecipes);
 
+<<<<<<< REA-81-create-category-filters-appetizer-main-course-d
 //Retrieve the recipes's category
 router.get("/", protect, getRecipesCategory);
 
+=======
+>>>>>>> main
 //return all recipes it can find in the database
 router.get("/", protect, async (req, res) => {
   try{

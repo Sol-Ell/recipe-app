@@ -7,6 +7,9 @@
     "start-front": "npm start --prefix frontend"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.29.2",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
     "autoprefixer": "^10.4.27",
     "jest": "^30.3.0",
     "postcss": "^8.5.8",
