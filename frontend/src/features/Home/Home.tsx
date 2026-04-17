@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import RecipeCard from '../../components/common/Recipe';
+import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal';
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,8 +14,16 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   
-  // NOTE: We removed the local useState and useEffect for currentUser 
-  // because we now get it directly from App.tsx via props!
+  // PROFESSIONAL APPROACH: Mocking the Auth state
+  // This will be replaced by "const { isAuthenticated } = useAuth();" later
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [sortType, setSortType] = useState<string>('rating'); 
+  
+  useEffect(() => {
+    // Check for a token in local storage (standard way to handle JWT)
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
 
   const dummyRecipes = [1, 2, 3, 4, 5, 6];
 
@@ -29,11 +38,33 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     }
   };
 
+  const sortedRecipes = [...dummyRecipes].sort((a, b) => {
+  if (sortType === 'rating') {
+    return b - a; // rating sort
+  }
+  if (sortType === 'time') {
+    return a - b; // time sort
+  }
+  return 0;
+});
+
   return (
     <div className="home-page-container">
       <section className="home-section">
-        <h2 className="section-title">TRENDING RECIPES</h2>
-        <div className="home-recipes-grid">
+  <div className="section-header">
+    <h2 className="section-title">TRENDING RECIPES</h2>
+
+    <select 
+      value={sortType} 
+      onChange={(e) => setSortType(e.target.value)}
+      className="sort-select"
+    >
+      <option value="rating">Sort by Rating</option>
+      <option value="time">Sort by Time</option>
+    </select>
+  </div>
+
+  <div className="home-recipes-grid">
           {dummyRecipes.map((i) => (
             <RecipeCard 
               key={`trending-${i}`}
@@ -68,6 +99,14 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* RECIPE DETAIL MODAL - Moved inside the return */}
+      {selectedRecipe && (
+        <RecipeDetailModal 
+          recipe={selectedRecipe} 
+          onClose={() => setSelectedRecipe(null)} 
+        />
       )}
     </div>
   );
