@@ -14,7 +14,7 @@ import { body } from 'express-validator';
 
 const router = express.Router();
 
-const recipeValidationRules = [
+const recipeValidationRules = [ // validation rule
   body('title').trim().isLength({ min: 3 }).withMessage('The title must have at least three characters.'),
   body('ingredients').isArray({ min: 1 }).withMessage(' To Have at least one ingredient.'),
   body('steps').isArray({ min: 1 }).withMessage('To have at least one step.'),
