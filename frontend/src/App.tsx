@@ -59,8 +59,8 @@ const App : React.FC = () => {
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
         <Route path="/create-recipe" element={<Create />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/search/:query" element={<SearchPage />} />
+        <Route path="/" element={<Home currentUser={user}/>} />
+        <Route path="/search/:query" element={<SearchPage currentUser={user} />} />
 
         
         {/* On garde la key pour forcer le refresh si on change de profil via l'URL */}

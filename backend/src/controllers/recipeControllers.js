@@ -1,5 +1,37 @@
 import Recipe from '../models/Recipe.js';
 
+import { validationResult } from "express-validator";
+
+export const createRecipe = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Récupère TOUS les champs nécessaires
+    const { title, servings, ingredients, category, steps, imageUrl, cookingTime } = req.body;
+
+    const newRecipe = new Recipe({
+      title,
+      servings,
+      ingredients,
+      category,
+      steps,
+      imageUrl,
+      cookingTime,
+      author: req.user._id, 
+    });
+
+    const savedRecipe = await newRecipe.save();
+    res.status(201).json(savedRecipe);
+
+  } catch (error) {
+    console.error("Recipe creation error:", error);
+    res.status(500).json({ message: "Server error during creation" });
+  }
+};
+
 // Get recipes created by a specific user
 export const getUserRecipes = async (req, res) => {
   try {
