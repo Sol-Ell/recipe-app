@@ -35,6 +35,7 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
 
   return (
     <div className="home-page-container">
+      {/* 1. SECTION TRENDING : Toujours visible */}
       <section className="home-section">
         <div className="section-header">
           <h2 className="section-title">TRENDING RECIPES</h2>
@@ -68,20 +69,77 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
         </div>
       </section>
 
-      {/* Floating Button */}
-      <button className="create-recipe-btn" onClick={handleCreateClick}> + </button>
+      {/* 2. LOGIQUE CONDITIONNELLE : Auth vs Guest */}
+      {currentUser ? (
+        <>
+          {/* Section Following - Uniquement si connecté */}
+          <section className="home-section">
+            <h2 className="section-title">FOLLOWING</h2>
+            <div className="home-recipes-grid">
+          {dummyRecipes.map((recipe) => (
+            <RecipeCard 
+              key={recipe.id}
+              id={recipe.id}
+              variant="feed"
+              title={recipe.title}
+              time={recipe.time}
+              category={recipe.category}
+              servings={recipe.servings}
+              rating={recipe.rating}
+              image={recipe.imageUrl}
+              currentUser={currentUser} 
+              // MISE À JOUR ICI : On passe l'objet complet au state
+              onOpenRecipeModal={() => setSelectedRecipe(recipe)}
+            />
+          ))}
+        </div>
+          </section>
 
-      {/* Auth Modal */}
+          {/* Section Recommended - Uniquement si connecté */}
+          <section className="home-section">
+            <h2 className="section-title">RECOMMENDED</h2>
+            <div className="home-recipes-grid">
+          {dummyRecipes.map((recipe) => (
+            <RecipeCard 
+              key={recipe.id}
+              id={recipe.id}
+              variant="feed"
+              title={recipe.title}
+              time={recipe.time}
+              category={recipe.category}
+              servings={recipe.servings}
+              rating={recipe.rating}
+              image={recipe.imageUrl}
+              currentUser={currentUser} 
+              // MISE À JOUR ICI : On passe l'objet complet au state
+              onOpenRecipeModal={() => setSelectedRecipe(recipe)}
+            />
+          ))}
+        </div>
+          </section>
+        </>
+      ) : (
+        /* BANNIÈRE GUEST : Si déconnecté */
+        <div className="guest-login-banner">
+          <div className="banner-content">
+            <h3>Hungry for more? 🍝</h3>
+            <p>Login to follow your favorite chefs and discover recipes tailored just for you.</p>
+            <button className="login-cta-btn" onClick={() => navigate('/login')}>
+              Sign In to See More
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Button : Visible seulement si connecté (optionnel selon ton goût) */}
+      {currentUser && (
+        <button className="create-recipe-btn" onClick={handleCreateClick}> + </button>
+      )}
+
+      {/* Modals */}
       {showAuthModal && (
         <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
-          <div className="auth-modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Login Required</h3>
-            <p>You need to be connected in order to create a recipe.</p>
-            <div className="modal-buttons">
-              <button className="btn-primary" onClick={() => navigate('/login')}>Login</button>
-              <button className="btn-secondary" onClick={() => setShowAuthModal(false)}>Close</button>
-            </div>
-          </div>
+           {/* ... ton code de modal auth ... */}
         </div>
       )}
 
