@@ -10,6 +10,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout }) => {
   const navigate = useNavigate();
+const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -34,6 +35,12 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout }) => {
     setShowDropdown(false);
     navigate('/login');
   };
+  const handleSearch = (e: React.KeyboardEvent) => {
+  if (e.key === 'Enter' && searchTerm.trim()) {
+    navigate(`/search/${searchTerm}`); // Envoie vers la page de recherche
+    setSearchTerm(""); // Optionnel : vide le champ après la recherche
+  }
+};
 
   return (
     <nav className="main-navbar">
@@ -46,14 +53,20 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout }) => {
       </div>
 
       <div className="nav-search-section">
-        <div className="search-wrapper">
-          <span className="search-icon">🔍</span>
-          <input type="text" placeholder="Search ..." />
-          <button className="filter-icon-btn">
-             {/* Ton SVG filter... */}
-          </button>
-        </div>
-      </div>
+  <div className="search-wrapper">
+    <span className="search-icon">🔍</span>
+    <input 
+      type="text" 
+      placeholder="Search ..." 
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      onKeyDown={handleSearch} // Déclenche la recherche sur "Entrée"
+    />
+    <button className="filter-icon-btn">
+       {/* Ton SVG filter... */}
+    </button>
+  </div>
+</div>
 
       <div className="nav-user-section" ref={dropdownRef}>
         {currentUser ? (
