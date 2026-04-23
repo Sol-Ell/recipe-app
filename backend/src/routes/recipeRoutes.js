@@ -5,10 +5,22 @@ import {
   getMyDoneRecipes 
 } from '../controllers/recipeControllers.js';
 import { protect } from '../middleware/auth.js';
+
 import Recipe from "../models/Recipe.js";
 import User from "../models/User.js";
+import { getRecipesCategory } from '../controllers/recipeControllers.js';
+import { createRecipe } from '../controllers/recipeControllers.js';
+import { body } from 'express-validator';
 
 const router = express.Router();
+
+const recipeValidationRules = [ // validation rule
+  body('title').trim().isLength({ min: 3 }).withMessage('The title must have at least three characters.'),
+  body('ingredients').isArray({ min: 1 }).withMessage(' To Have at least one ingredient.'),
+  body('steps').isArray({ min: 1 }).withMessage('To have at least one step.'),
+  body('cookingTime').isNumeric().withMessage('The time must be numeric.'),
+  body('category').isIn(["Appetizer", "Main Course", "Dessert", "Vegetarian"]).withMessage('Invalid category.'),
+];
 
 // Retrieve recipes from a specific user (public view/profile)
 // URL: /api/recipes/user/:id
@@ -22,6 +34,9 @@ router.get('/my-likes', protect, getMyLikedRecipes);
 // URL: /api/recipes/my-done
 router.get('/my-done', protect, getMyDoneRecipes);
 
+//Retrieve the recipes's category
+router.get("/", protect, getRecipesCategory);
+
 //return all recipes it can find in the database
 router.get("/", protect, async (req, res) => {
   try{
@@ -33,6 +48,8 @@ router.get("/", protect, async (req, res) => {
 });
 
 //routes for the recipe creation
+router.post("/", protect, recipeValidationRules, createRecipe);
+/*
 router.post("/", protect, async (req, res) => {
   const recipe = new Recipe({ ...req.body, author: req.user._id });
   try{
@@ -41,7 +58,7 @@ router.post("/", protect, async (req, res) => {
   } catch (err) {
     res.json(err);
   }
-});
+});*/
 
 //route that allow us to save our recipes
 router.put("/", protect, async (req, res) => {
@@ -68,6 +85,7 @@ router.get("/savedRecipes/ids", protect, async (req, res) => {
     res.json(err);
   }
 });
+
 //Retrieve all saved recipe items
 router.get("/savedRecipes", protect, async (req, res) => {
   try{
