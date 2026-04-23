@@ -1,35 +1,30 @@
-import React, { useState } from 'react';
 import RecipeCard from '../../components/common/Recipe';
+import React, { useState, useEffect } from 'react';
 import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal';
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
 
-// 1. Define the props interface
 interface HomeProps {
   currentUser: any; 
 }
 
-// 2. IMPORTANT: Pass the interface to React.FC and destructure currentUser
 const Home: React.FC<HomeProps> = ({ currentUser }) => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  
-  // PROFESSIONAL APPROACH: Mocking the Auth state
-  // This will be replaced by "const { isAuthenticated } = useAuth();" later
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [sortType, setSortType] = useState<string>('rating'); 
-  
-  useEffect(() => {
-    // Check for a token in local storage (standard way to handle JWT)
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
 
-  const dummyRecipes = [1, 2, 3, 4, 5, 6];
+  // --- LES DEUX LIGNES CRUCIALES À AJOUTER ---
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [recipes, setRecipes] = useState<any[]>([]); // Pour tes futurs vrais data
 
-  /**
-   * Logic to handle recipe creation access
-   */
+  // On simule des données d'objets au lieu de simples chiffres [1,2,3]
+  // pour que le modal ait quelque chose à afficher
+  const dummyRecipes = [
+    { id: '1', title: "Big Wagyu Burger", time: "30 min", category: "Snack", servings: 4, rating: 5, imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd" },
+    { id: '2', title: "Healthy Salad", time: "15 min", category: "Lunch", servings: 2, rating: 4, imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd" },
+    // Ajoute d'autres objets ici...
+  ];
+
   const handleCreateClick = () => {
     if (currentUser) {
       navigate('/create-recipe');
@@ -38,47 +33,36 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     }
   };
 
-  const sortedRecipes = [...dummyRecipes].sort((a, b) => {
-  if (sortType === 'rating') {
-    return b - a; // rating sort
-  }
-  if (sortType === 'time') {
-    return a - b; // time sort
-  }
-  return 0;
-});
-
   return (
     <div className="home-page-container">
       <section className="home-section">
-  <div className="section-header">
-    <h2 className="section-title">TRENDING RECIPES</h2>
+        <div className="section-header">
+          <h2 className="section-title">TRENDING RECIPES</h2>
+          <select 
+            value={sortType} 
+            onChange={(e) => setSortType(e.target.value)}
+            className="sort-select"
+          >
+            <option value="rating">Sort by Rating</option>
+            <option value="time">Sort by Time</option>
+          </select>
+        </div>
 
-    <select 
-      value={sortType} 
-      onChange={(e) => setSortType(e.target.value)}
-      className="sort-select"
-    >
-      <option value="rating">Sort by Rating</option>
-      <option value="time">Sort by Time</option>
-    </select>
-  </div>
-
-  <div className="home-recipes-grid">
-          {dummyRecipes.map((i) => (
+        <div className="home-recipes-grid">
+          {dummyRecipes.map((recipe) => (
             <RecipeCard 
-              key={`trending-${i}`}
-              id={`recipe-${i}`}
+              key={recipe.id}
+              id={recipe.id}
               variant="feed"
-              title="Big and Juicy Wagyu Beef Cheeseburger"
-              time="30 Minutes"
-              category="Snack"
-              servings={4}
-              rating={5}
-              // 3. Pass the currentUser received from App.tsx down to the card
+              title={recipe.title}
+              time={recipe.time}
+              category={recipe.category}
+              servings={recipe.servings}
+              rating={recipe.rating}
+              image={recipe.imageUrl}
               currentUser={currentUser} 
-              image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
-              onOpenRecipeModal={(id) => console.log("Recipe Modal ID:", id)}
+              // MISE À JOUR ICI : On passe l'objet complet au state
+              onOpenRecipeModal={() => setSelectedRecipe(recipe)}
             />
           ))}
         </div>
@@ -101,7 +85,7 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
         </div>
       )}
 
-      {/* RECIPE DETAIL MODAL - Moved inside the return */}
+      {/* MODAL DE DÉTAIL - selectedRecipe est maintenant défini ! */}
       {selectedRecipe && (
         <RecipeDetailModal 
           recipe={selectedRecipe} 

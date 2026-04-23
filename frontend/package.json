@@ -5,7 +5,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "jest"
+    
   },
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
