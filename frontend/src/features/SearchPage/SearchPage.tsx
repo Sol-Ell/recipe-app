@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react'; // Ajout de useState
 import { useParams } from 'react-router-dom';
 import RecipeCard from '../../components/common/Recipe';
-import './SearchPage.css'; // On va réutiliser le style de la Home
+import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal'; // Import manquant
+import './SearchPage.css';
 
-const SearchPage: React.FC = () => {
-  const { query } = useParams<{ query: string }>(); // Récupère le mot de l'URL
+interface SearchPageProps {
+  currentUser: any;
+}
 
-  // Pour le moment (Frontend-only), on simule des résultats
-  const results = [1, 2, 3]; 
+const SearchPage: React.FC<SearchPageProps> = ({ currentUser }) => {
+  const { query } = useParams<{ query: string }>();
+  
+  // --- ÉTAT POUR LE MODAL ---
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+
+  // Simulation de résultats (On imagine que ce sont des objets complets)
+  const results = [
+    { id: '1', title: "Big Wagyu Burger", time: "30 min", category: "Snack", servings: 4, rating: 5, imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd" },
+  ]; 
 
   return (
-    <div className="home-page-container"> {/* On garde la même classe pour le style */}
+    <div className="home-page-container">
       <section className="home-section">
         <h2 className="section-title">
           RESULTS FOR: <span className="query-highlight">"{query?.toUpperCase()}"</span>
@@ -18,25 +28,37 @@ const SearchPage: React.FC = () => {
         
         {results.length > 0 ? (
           <div className="home-recipes-grid">
-            {results.map((i) => (
+            {results.map((recipe) => (
               <RecipeCard 
-              key={`trending-${i}`}
-              variant="feed"
-              title="Big and Juicy Wagyu Beef Cheeseburger"
-              time="30 Minutes"
-              category="Snack"
-              servings={4}
-              rating={5}
-              image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
-            />
+                key={recipe.id}
+                id={recipe.id}
+                variant="feed"
+                title={recipe.title}
+                time={recipe.time}
+                category={recipe.category}
+                servings={recipe.servings}
+                rating={recipe.rating}
+                image={recipe.imageUrl}
+                currentUser={currentUser}
+                // AU CLIC : On ouvre le modal avec les infos de cette recette
+                onOpenRecipeModal={() => setSelectedRecipe(recipe)}
+              />
             ))}
           </div>
         ) : (
-          <div className="no-results">
-            <p>No recipes found for "{query}". Try something else! 🍳</p>
+          <div className="no-results-container">
+            <p className="no-results-text">No recipes found for "{query}". Try "Pasta" or "Burger"! 🍳</p>
           </div>
         )}
       </section>
+
+      {/* --- AFFICHAGE DU MODAL --- */}
+      {selectedRecipe && (
+        <RecipeDetailModal 
+          recipe={selectedRecipe} 
+          onClose={() => setSelectedRecipe(null)} 
+        />
+      )}
     </div>
   );
 };

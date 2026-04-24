@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import './Create-Recipe.css';
+import axios from 'axios';
 
 // Mock Data for consistent search
 const FOOD_DATABASE = ['Milk', 'Eggs', 'Chicken Breast', 'Tomato', 'Pasta', 'Olive Oil', 'Garlic'];
@@ -9,7 +10,39 @@ const MEAL_TYPES = ['Breakfast', 'Snack', 'Lunch', 'Dinner', 'Dessert'];
 
 const RecipeEditor: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const handleSubmit = async () => {
+  try {
+    // 1. On prépare les données (nettoyage)
+    const recipeData = {
+      title: recipe.title,
+      cookingTime: recipe.time,
+      category: recipe.category,
+      servings: recipe.servings,
+      cuisineTags: recipe.cuisineTags,
+      dietaryTags: recipe.dietaryTags,
+      ingredients: recipe.ingredients.map(ing => `${ing.qty} ${ing.unit} ${ing.name}`),
+      // Transformation des subsections pour coller à ton Backend
+      instructions: recipe.subsections.map(sub => ({
+        category: sub.title,
+        steps: sub.content.split('\n').filter(s => s.trim() !== '') // On crée un tableau à chaque saut de ligne
+      })),
+      imageUrl: recipe.image, // La chaîne Base64
+    };
+
+    const token = localStorage.getItem('token');
+    const response = await axios.post('/api/recipes', recipeData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (response.status === 201) {
+      alert("Recette enregistrée avec succès ! 👨‍🍳");
+      // Optionnel : rediriger vers le home
+      // navigate('/home');
+    }
+  } catch (error: any) {
+    console.error("Erreur lors de la sauvegarde:", error.response?.data || error.message);
+    alert("Erreur : " + (error.response?.data?.message || "Impossible de sauvegarder."));
+  }
+};
   const [recipe, setRecipe] = useState({
     title: '',
     time: 30,
@@ -225,7 +258,9 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       </div>
 
-      <button className="save-btn">Save Recipe</button>
+      <button className="save-btn" onClick={handleSubmit}>
+  Save Recipe
+</button>
 
       {/* TAG MODAL */}
       {activeModal === 'tags' && (

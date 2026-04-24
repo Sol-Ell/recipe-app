@@ -121,3 +121,41 @@
   border: 1px solid #ccc;
   cursor: pointer;
 }
+
+.guest-login-banner {
+  margin: 40px 0;
+  padding: 60px 20px;
+  background-color: #E8F7F9; /* Ton bleu clair */
+  border-radius: 30px;
+  text-align: center;
+  border: 2px dashed #FF6B6B; /* Ton corail */
+}
+
+.banner-content h3 {
+  font-size: 1.8rem;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.banner-content p {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+}
+
+.login-cta-btn {
+  background-color: #FF6B6B;
+  color: white;
+  border: none;
+  padding: 14px 30px;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  transition: transform 0.2s;
+}
+
+.login-cta-btn:hover {
+  transform: scale(1.05);
+}
