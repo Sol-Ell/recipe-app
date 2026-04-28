@@ -4,6 +4,7 @@ import { connectDB } from "./config/db.js";
 import authRoutes from './routes/auth.js';
 import recipeRoutes from './routes/recipeRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import authRoutess from './routes/auth.js';
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -14,6 +15,7 @@ app.use(express.json());//This line tells our express server to automatically pa
 app.use("/api/users", authRoutes);//Register our user related routes like register login under the /api/users
 app.use('/api/recipes', recipeRoutes);//Routes linked to the recipes
 app.use('/api/users', userRoutes);//Routes linked to the profile
+app.use('/api/auth', authRoutess);
 connectDB();
 app.listen(PORT, () => {
     console.log(`Server started at port ${PORT}`);
