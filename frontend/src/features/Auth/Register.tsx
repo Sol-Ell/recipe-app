@@ -146,14 +146,9 @@ const Register: React.FC<RegisterProps> = ({ setUser }) => {
 
             <button type="submit" className="btn-signin">Create account</button>
 
-            <div className="separator">
-              <span>Or</span>
-            </div>
+            
 
-            <button type="button" className="btn-google">
-              <img src={logog} alt="Google Logo" />
-              Sign up with Google
-            </button>
+            
           </form>
 
           <p className="auth-footer">
