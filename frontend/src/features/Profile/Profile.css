@@ -160,7 +160,7 @@
 }
 
 /* Edit Button */
-.edit-profile-action-btn {
+.edit-profile-action-btn, .save-profile-btn {
   background-color: var(--color-sage);
   color: white;
   border: none;
@@ -245,4 +245,34 @@
 }
 .modal-actions {
   display: flex; gap: 10px; margin-top: 20px;
+}
+
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative; /* Useful for absolute positioning button if preferred */
+}
+
+/* Local preview styling */
+.large-avatar.local-preview {
+  border: 3px dashed #FF6B6B; /* Optional: indicates changes not saved yet */
+}
+
+.change-photo-btn {
+  margin-top: 10px;
+  background-color: transparent;
+  color: #FF6B6B; /* Your Coral color */
+  border: 1px solid #FF6B6B;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.change-photo-btn:hover {
+  background-color: #FF6B6B;
+  color: white;
 }

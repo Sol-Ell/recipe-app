@@ -1,23 +1,104 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { Form, useParams } from 'react-router-dom';
 import RecipeCard from '../../components/common/Recipe';
 import '../../index.css';
 import './Profile.css';
 
 interface ProfileProps {
-  currentUser: any; // The authenticated user passed from App.tsx
+  setUser:(currentUser: any) => void; // The authenticated user passed from App.tsx
+  currentUser: any
 }
 
-const Profile: React.FC<ProfileProps> = ({ currentUser }) => {
+
+// Ajoute setUser ici dans les accolades
+const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const { id } = useParams(); // Extracts the user ID from the URL string
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newAvatar, setNewAvatar] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      handleSave(); // Trigger save if already in edit mode
+    } else {
+      setIsEditing(true); // Switch to edit mode
+    }
+  };
+
+  const handleTriggerFileInput = () => {
+    // Programmatically "click" the hidden file input
+
+    fileInputRef.current?.click();
+  };
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; // Get the selected file
+
+    if (file) {
+      const reader = new FileReader(); // Create a FileReader
+
+      // Event listener: executes when reading is successfully finished
+      reader.onloadend = () => {
+        const base64String = reader.result as string; // Convert to Base64 string
+        setNewAvatar(base64String); // Set state for immediate local preview
+      };
+
+      reader.readAsDataURL(file); // Start reading file content as Data URL (Base64)
+    }
+  };
+  
+  const handleSave = async () => {
+    // Combine existing save logic (passwords match...)
+    
+    try {
+      console.log("Saving new profile photo (Base64)...", newAvatar);
+      // API CALL HERE: axios.patch('/api/users/profile', { avatar: newAvatar, ... })
+      
+      // Update local context/state with the new avatar after success API call
+      // setUser({...currentUser, avatar: newAvatar}); 
+
+      setIsEditing(false); // Switch off edit mode
+      setNewAvatar(null); // Reset temp avatar state
+      alert("Profile updated successfully!");
+    } catch (err) {
+      setError("Failed to save changes.");
+    }
+  };
+
+  const [error, setError] = useState<string>("");
+    const [formData, setFormData] = useState({
+      email : "",
+      password : "",
+  
+    });
   
   // Dynamic Check: Compare logged-in user ID with the Profile ID in the URL
 const isOwnProfile = currentUser && id ? currentUser._id === id : false;
+
+const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+        const res = await axios.post("/api/users/login", formData);
+        localStorage.setItem("token", res.data.token);
+        console.log(res.data);
+        setUser(res.data);
+        window.location.href = '/';
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        // Here TypeScript knows that's a Axios error
+        setError(err.response?.data?.message || "Login failed");
+      } else {
+        // Errors don't come from axios
+        setError("An unexpected error occurred");
+      }
+    };
+    console.log("Submit:", formData);
+
+  };
 
   // 1. Fetching recipes based on the selected tab and user ID
   useEffect(() => {
@@ -82,7 +163,9 @@ const isOwnProfile = currentUser && id ? currentUser._id === id : false;
         <div className="profile-upper-info">
           {/* AVATAR: Render image if available, otherwise show initial with colored background */}
           <div className="avatar-container">
-            {currentUser?.avatar ? (
+           {newAvatar ? (
+              <img src={newAvatar} alt="New Profile Preview" className="large-avatar local-preview" />
+            ) : currentUser?.avatar ? (
               <img src={currentUser.avatar} alt="Profile" className="large-avatar" />
             ) : (
               <div 
@@ -92,38 +175,73 @@ const isOwnProfile = currentUser && id ? currentUser._id === id : false;
                 {(currentUser?.username || "P").charAt(0).toUpperCase()}
               </div>
             )}
+            {isEditing && (
+              <button 
+                className="change-photo-btn" 
+                onClick={handleTriggerFileInput} // Triggers hidden input
+                type="button" // Important to not submit any form
+              >
+                Change Picture
+              </button>
+            )}
+            <input 
+              type="file" 
+              ref={fileInputRef} // Relates the ref to this element
+              style={{ display: 'none' }} // Hides the element visually
+              accept="image/*" // Restricts selection to images
+              onChange={handleFileChange} // Executes preview logic on change
+            />
           </div>
           
           <div className="profile-identity">
             <h1 className="user-fullname">{currentUser?.username || "User Name"}</h1>
-            
-            {/* Real-time stats from the database */}
-            <div className="stats-row">
-              <div className="stat-block">
-                <span className="stat-value">{currentUser?.followers?.length || 0}</span>
-                <span className="stat-label">followers</span>
-              </div>
-              <div className="stat-block">
-                <span className="stat-value">{currentUser?.following?.length || 0}</span>
-                <span className="stat-label">following</span>
-              </div>
-            </div>
           </div>
 
-          {/* Action button changes based on profile ownership */}
-          {isOwnProfile ? (
-            <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
-              Edit profile
+          {isOwnProfile && (
+            <button className={isEditing ? "save-profile-btn" : "edit-profile-btn"} onClick={handleEditToggle}>
+              {isEditing ? "Save changes" : "Edit profile"}
             </button>
-          ) : (
-            <button className="follow-btn">Follow</button>
           )}
         </div>
 
         <hr className="divider" />
+        {isEditing ? (
+  /* FORMULAIRE D'ÉDITION */
+  <div className="edit-mode-container">
+    {/* Tes inputs Email / Password ici */}
+    <h1>Password</h1>
+          <form id="editing-form">
+            <input 
+                  name="password" // INDISPENSABLE
+                  type={"password"} 
+                  placeholder="At least 8 characters" 
+                  required 
+                />
+                <input 
+                  name="password" // INDISPENSABLE
+                  type={"password"} 
+                  placeholder="At least 8 characters" 
+                  required 
+                />
+                <input 
+                  name="password" // INDISPENSABLE
+                  type={"password"} 
+                  placeholder="At least 8 characters" 
+                  required 
+                />
+            
 
-        {/* Navigation Tabs */}
-        <nav className="tabs-nav">
+
+
+          </form>
+          <h1>Email</h1>
+  </div>
+) : (
+  /* MODE VUE CLASSIQUE */
+  <>
+    <nav className="tabs-nav">
+       {/* Tes boutons My Recipes / Likes ici */}
+       <nav className="tabs-nav">
           <button 
             className={activeTab === 'My Recipes' ? 'active' : ''} 
             onClick={() => setActiveTab('My Recipes')}
@@ -140,19 +258,13 @@ const isOwnProfile = currentUser && id ? currentUser._id === id : false;
               >
                 Likes
               </button>
-              <button 
-                className={activeTab === 'Done' ? 'active' : ''} 
-                onClick={() => setActiveTab('Done')}
-              >
-                Done
-              </button>
             </>
           )}
         </nav>
-
-        {/* Recipes Rendering Grid */}
-        <div className="recipes-grid">
-          {recipes.length > 0 ? (
+    </nav>
+    <div className="recipes-grid">
+       {/* Tes cartes de recettes ici */}
+       {recipes.length > 0 ? (
             recipes.map(recipe => (
               <RecipeCard 
                 key={recipe._id}
@@ -168,27 +280,14 @@ const isOwnProfile = currentUser && id ? currentUser._id === id : false;
           ) : (
             <p className="no-data-msg">No recipes found here yet.</p>
           )}
-        </div>
+    </div>
+  </>
+)}
+
+      
       </div>
 
-      {/* MODAL: Profile Update Form */}
-      {isEditModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Edit Profile</h2>
-            <div className="input-group">
-              <label>Username</label>
-              <input type="text" defaultValue={currentUser?.username} />
-            </div>
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setIsEditModalOpen(false)}>
-                Cancel
-              </button>
-              <button className="btn-save">Save Changes</button>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };
