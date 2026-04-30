@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg"
-import logog from "../../assets/google-logo.png";
 import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';

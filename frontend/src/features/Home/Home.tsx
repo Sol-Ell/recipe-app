@@ -11,7 +11,6 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ currentUser }) => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [sortType, setSortType] = useState<string>('rating'); 
 
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [recipes, setRecipes] = useState<any[]>([]);
