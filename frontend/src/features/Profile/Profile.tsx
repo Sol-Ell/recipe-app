@@ -1,132 +1,132 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Form, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/common/Recipe';
 import '../../index.css';
 import './Profile.css';
 
 interface ProfileProps {
-  setUser:(currentUser: any) => void; // The authenticated user passed from App.tsx
-  currentUser: any
+  setUser: (currentUser: any) => void; 
+  currentUser: any;
 }
 
-
-// Ajoute setUser ici dans les accolades
 const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
-  const { id } = useParams(); // Extracts the user ID from the URL string
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [newAvatar, setNewAvatar] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleEditToggle = () => {
-    if (isEditing) {
-      handleSave(); // Trigger save if already in edit mode
-    } else {
-      setIsEditing(true); // Switch to edit mode
-    }
-  };
-
-  const handleTriggerFileInput = () => {
-    // Programmatically "click" the hidden file input
-
-    fileInputRef.current?.click();
-  };
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]; // Get the selected file
-
-    if (file) {
-      const reader = new FileReader(); // Create a FileReader
-
-      // Event listener: executes when reading is successfully finished
-      reader.onloadend = () => {
-        const base64String = reader.result as string; // Convert to Base64 string
-        setNewAvatar(base64String); // Set state for immediate local preview
-      };
-
-      reader.readAsDataURL(file); // Start reading file content as Data URL (Base64)
-    }
-  };
-  
-  const handleSave = async () => {
-    // Combine existing save logic (passwords match...)
-    
-    try {
-      console.log("Saving new profile photo (Base64)...", newAvatar);
-      // API CALL HERE: axios.patch('/api/users/profile', { avatar: newAvatar, ... })
-      
-      // Update local context/state with the new avatar after success API call
-      // setUser({...currentUser, avatar: newAvatar}); 
-
-      setIsEditing(false); // Switch off edit mode
-      setNewAvatar(null); // Reset temp avatar state
-      alert("Profile updated successfully!");
-    } catch (err) {
-      setError("Failed to save changes.");
-    }
-  };
-
   const [error, setError] = useState<string>("");
-    const [formData, setFormData] = useState({
-      email : "",
-      password : "",
-  
-    });
-  
-  // Dynamic Check: Compare logged-in user ID with the Profile ID in the URL
-const isOwnProfile = currentUser && id ? currentUser._id === id : false;
 
-const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-        const res = await axios.post("/api/users/login", formData);
-        localStorage.setItem("token", res.data.token);
-        console.log(res.data);
-        setUser(res.data);
-        window.location.href = '/';
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        // Here TypeScript knows that's a Axios error
-        setError(err.response?.data?.message || "Login failed");
-      } else {
-        // Errors don't come from axios
-        setError("An unexpected error occurred");
-      }
-    };
-    console.log("Submit:", formData);
+  // --- EDITING STATES (Avatar, Email, Password) ---
+  const [newAvatar, setNewAvatar] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editData, setEditData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+    currentEmailInput: "",
+    newEmail: ""
+  });
 
-  };
+  // Check if the viewed profile belongs to the logged-in user
+  const isOwnProfile = currentUser && id ? currentUser._id === id : false;
 
-  // 1. Fetching recipes based on the selected tab and user ID
+  // --- 1. RECIPE FETCHING LOGIC ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        let endpoint = `/api/recipes/user/${id}`; // Default view
+        let endpoint = `/api/recipes/user/${id}`; 
         
-        // Adjust endpoint based on navigation tab
         if (activeTab === 'Likes') endpoint = '/api/recipes/my-likes';
-        if (activeTab === 'Done') endpoint = '/api/recipes/my-done';
 
         const res = await axios.get(endpoint, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setRecipes(res.data);
       } catch (err) {
-        setRecipes([]); // Reset grid if request fails or data is empty
+        setRecipes([]); 
       } finally {
-        // Keeps the shimmer visible for a split second for better UX feel
         setTimeout(() => setLoading(false), 800); 
       }
     };
     fetchRecipes();
   }, [activeTab, id]);
 
-  // 2. Generates a consistent background color based on the username string
+  // --- 2. PROFILE IMAGE EDITING LOGIC ---
+  const handleTriggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // --- 3. SAVE LOGIC (Updates Email, Password, and Avatar) ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditData({ ...editData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    // Validation: Check if passwords match
+    if (editData.newPassword || editData.confirmPassword) {
+      if (editData.newPassword !== editData.confirmPassword) {
+        alert("Error: New passwords do not match!");
+        return;
+      }
+      if (editData.newPassword.length < 8) {
+        alert("Error: Password must be at least 8 characters.");
+        return;
+      }
+    }
+    if (editData.newEmail) {
+    if (editData.currentEmailInput !== currentUser.email) {
+      alert("Error: The current email entered is incorrect.");
+      return;
+    }
+    
+    if (editData.newEmail === currentUser.email) {
+      alert("Error: New email must be different from the current one.");
+      return;
+    }
+  }
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        avatar: newAvatar || currentUser.avatar,
+        email: editData.newEmail || currentUser.email,
+        password: editData.newPassword || undefined
+      };
+
+      // API Call to update profile
+      const res = await axios.patch(`/api/users/update-profile`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 200 || res.status === 201) {
+        alert("Profile updated successfully! 🎉");
+        setUser(res.data.user); // Update global user state
+        setIsEditing(false);
+        setNewAvatar(null);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update profile.");
+    }
+  };
+
+  // --- UTILS ---
   const getAvatarColor = (name: string) => {
     const colors = ['#A3B18A', '#588157', '#3A5A40', '#344E41'];
     let hash = 0;
@@ -136,20 +136,16 @@ const handleSubmit = async (e: React.FormEvent) => {
     return colors[Math.abs(hash) % colors.length];
   };
 
- 
-  // --- SKELETON LOADING VIEW ---
+  // --- RENDER SKELETON LOADING ---
   if (loading || !currentUser) {
     return (
       <div className="profile-page-wrapper">
         <div className="profile-top-background shimmer"></div>
         <div className="profile-main-card">
-          <div className="profile-upper-info" style={{ flexDirection: 'column', alignItems: 'center' }}>
-            <div className="skeleton circle-md shimmer"></div>
-            <div className="skeleton title-md shimmer" style={{ marginTop: '20px' }}></div>
-          </div>
-          <div className="recipes-grid" style={{ marginTop: '50px' }}>
-            {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
-          </div>
+           <div className="skeleton circle-md shimmer center"></div>
+           <div className="recipes-grid">
+             {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
+           </div>
         </div>
       </div>
     );
@@ -160,11 +156,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="profile-top-background"></div>
 
       <div className="profile-main-card">
+        {/* HEADER SECTION */}
         <div className="profile-upper-info">
-          {/* AVATAR: Render image if available, otherwise show initial with colored background */}
           <div className="avatar-container">
-           {newAvatar ? (
-              <img src={newAvatar} alt="New Profile Preview" className="large-avatar local-preview" />
+            {newAvatar ? (
+              <img src={newAvatar} alt="Preview" className="large-avatar local-preview" />
             ) : currentUser?.avatar ? (
               <img src={currentUser.avatar} alt="Profile" className="large-avatar" />
             ) : (
@@ -175,21 +171,18 @@ const handleSubmit = async (e: React.FormEvent) => {
                 {(currentUser?.username || "P").charAt(0).toUpperCase()}
               </div>
             )}
+            
             {isEditing && (
-              <button 
-                className="change-photo-btn" 
-                onClick={handleTriggerFileInput} // Triggers hidden input
-                type="button" // Important to not submit any form
-              >
+              <button className="change-photo-btn" onClick={handleTriggerFileInput}>
                 Change Picture
               </button>
             )}
             <input 
               type="file" 
-              ref={fileInputRef} // Relates the ref to this element
-              style={{ display: 'none' }} // Hides the element visually
-              accept="image/*" // Restricts selection to images
-              onChange={handleFileChange} // Executes preview logic on change
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              accept="image/*" 
+              onChange={handleFileChange} 
             />
           </div>
           
@@ -198,96 +191,116 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
 
           {isOwnProfile && (
-            <button className={isEditing ? "save-profile-btn" : "edit-profile-btn"} onClick={handleEditToggle}>
+            <button 
+              className={isEditing ? "save-profile-btn" : "edit-profile-btn"} 
+              onClick={isEditing ? handleSave : () => setIsEditing(true)}
+            >
               {isEditing ? "Save changes" : "Edit profile"}
             </button>
           )}
         </div>
 
         <hr className="divider" />
+
+        {/* CONDITIONAL CONTENT: EDIT MODE vs VIEW MODE */}
         {isEditing ? (
-  /* FORMULAIRE D'ÉDITION */
-  <div className="edit-mode-container">
-    {/* Tes inputs Email / Password ici */}
-    <h1>Password</h1>
-          <form id="editing-form">
-            <input 
-                  name="password" // INDISPENSABLE
-                  type={"password"} 
-                  placeholder="At least 8 characters" 
-                  required 
-                />
-                <input 
-                  name="password" // INDISPENSABLE
-                  type={"password"} 
-                  placeholder="At least 8 characters" 
-                  required 
-                />
-                <input 
-                  name="password" // INDISPENSABLE
-                  type={"password"} 
-                  placeholder="At least 8 characters" 
-                  required 
-                />
+          <div className="edit-mode-container">
             
+            
+            <div className="edit-grid">
+              {/* LEFT SIDE: Password Form */}
+              <div className="edit-section">
+                <h1>Change Password</h1>
+                <div className="input-group">
+                  <label>Enter the new password</label>
+                  <input 
+                    name="newPassword"
+                    type="password"
+                    placeholder="New password"
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Confirm new password</label>
+                  <input 
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
 
+              {/* RIGHT SIDE: Email Form */}
+              <div className="edit-section">
+                <h1>Change Email</h1>
+                <div className="input-group">
+                  <label>Enter the actual email</label>
+                  <input 
+                  name="currentEmailInput"
+                  placeholder="Current email"
+                  type='email'
+                  onChange={handleInputChange} 
+                  value={editData.currentEmailInput}/>
 
+                </div>
+                <div className="input-group">
+                  <label>Enter the new email</label>
+                  <input 
+                    name="newEmail"
+                    type="email"
+                    placeholder="New email"
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            </div>
 
-          </form>
-          <h1>Email</h1>
-  </div>
-) : (
-  /* MODE VUE CLASSIQUE */
-  <>
-    <nav className="tabs-nav">
-       {/* Tes boutons My Recipes / Likes ici */}
-       <nav className="tabs-nav">
-          <button 
-            className={activeTab === 'My Recipes' ? 'active' : ''} 
-            onClick={() => setActiveTab('My Recipes')}
-          >
-            {isOwnProfile ? 'My Recipes' : 'Recipes'}
-          </button>
-          
-          {/* Private tabs: Only visible if browsing your own profile */}
-          {isOwnProfile && (
-            <>
+            
+          </div>
+        ) : (
+          <>
+            {/* NAVIGATION TABS (Only shown in View Mode) */}
+            <nav className="tabs-nav">
               <button 
-                className={activeTab === 'Likes' ? 'active' : ''} 
-                onClick={() => setActiveTab('Likes')}
+                className={activeTab === 'My Recipes' ? 'active' : ''} 
+                onClick={() => setActiveTab('My Recipes')}
               >
-                Likes
+                {isOwnProfile ? 'My Recipes' : 'Recipes'}
               </button>
-            </>
-          )}
-        </nav>
-    </nav>
-    <div className="recipes-grid">
-       {/* Tes cartes de recettes ici */}
-       {recipes.length > 0 ? (
-            recipes.map(recipe => (
-              <RecipeCard 
-                key={recipe._id}
-                variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
-                title={recipe.title}
-                time={recipe.cookingTime || "30 min"}
-                category={recipe.category || "Food"}
-                servings={recipe.servings || 2}
-                rating={recipe.rating || 4}
-                image={recipe.image}
-              />
-            ))
-          ) : (
-            <p className="no-data-msg">No recipes found here yet.</p>
-          )}
-    </div>
-  </>
-)}
+              
+              {isOwnProfile && (
+                <button 
+                  className={activeTab === 'Likes' ? 'active' : ''} 
+                  onClick={() => setActiveTab('Likes')}
+                >
+                  Likes
+                </button>
+              )}
+            </nav>
 
-      
+            {/* RECIPES GRID */}
+            <div className="recipes-grid">
+              {recipes.length > 0 ? (
+                recipes.map(recipe => (
+                  <RecipeCard 
+                    key={recipe._id}
+                    variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
+                    title={recipe.title}
+                    time={recipe.cookingTime || "30 min"}
+                    category={recipe.category || "Food"}
+                    servings={recipe.servings || 2}
+                    rating={recipe.rating || 4}
+                    image={recipe.image}
+                  />
+                ))
+              ) : (
+                <p className="no-data-msg">No recipes found here yet.</p>
+              )}
+            </div>
+          </>
+        )}
       </div>
-
-      
     </div>
   );
 };

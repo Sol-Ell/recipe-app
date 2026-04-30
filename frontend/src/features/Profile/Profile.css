@@ -170,7 +170,76 @@
   cursor: pointer;
   opacity: 0.9;
 }
+.edit-mode-container {
+  padding: 40px;
+  text-align: center;
+}
 
+.edit-title {
+  color: #8fb39d;
+  margin-bottom: 40px;
+  font-size: 2rem;
+}
+
+.edit-grid {
+  display: flex;
+  justify-content: space-around;
+  text-align: left;
+  gap: 50px;
+}
+
+.edit-section {
+  flex: 1;
+}
+
+.edit-section h1 {
+  color: #8fb39d;
+  margin-bottom: 20px;
+  
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid #e0e7ff;
+  background-color: #f8faff;
+  outline: none;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.save-change-btn {
+  background-color: #8fb39d;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.save-change-btn:hover {
+  background-color: #7a9c88;
+}
 /* Tabs */
 .tabs-nav {
   display: flex;
@@ -206,6 +275,14 @@
   border-radius: 12px;
   position: relative;
   overflow: hidden;
+}
+
+.edit-section label{
+
+  font-size: small;
+  color: #666;
+
+
 }
 
 .skeleton.shimmer::after {
