@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg";
-import logog from "../../assets/google-logo.png";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -146,14 +145,9 @@ const Register: React.FC<RegisterProps> = ({ setUser }) => {
 
             <button type="submit" className="btn-signin">Create account</button>
 
-            <div className="separator">
-              <span>Or</span>
-            </div>
+            
 
-            <button type="button" className="btn-google">
-              <img src={logog} alt="Google Logo" />
-              Sign up with Google
-            </button>
+            
           </form>
 
           <p className="auth-footer">
