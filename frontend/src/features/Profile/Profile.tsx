@@ -137,7 +137,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         levelTags: tags.level
       };
 
-      const res = await axios.patch(`/api/users/update-profile`, payload, {
+      const res = await axios.patch(`/api/edit/update-profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
