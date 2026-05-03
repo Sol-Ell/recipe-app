@@ -22,8 +22,6 @@ const userSchema = new mongoose.Schema({
 }, {timestamps: true});
 
 userSchema.pre('save', async function() {
-    // 1. Si le mot de passe n'est pas modifié, on sort de la fonction
-    // Mongoose passera automatiquement à la suite car la fonction se termine
     if (!this.isModified("password")) {
         return; 
     }
@@ -33,9 +31,7 @@ userSchema.pre('save', async function() {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
         
-        // 3. Pas besoin d'appeler next() ! La fonction async s'arrête ici avec succès.
     } catch (error) {
-        // 4. Si on a une erreur, on utilise 'throw' au lieu de next(error)
         throw error;
     }
 });
