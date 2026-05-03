@@ -5,29 +5,28 @@
 
 /* Container for the avatar, text info, and button */
 .profile-upper-info {
-  background-color: var(--color-cream);
   display: flex;
-  align-items: center; /* Aligne verticalement au centre */
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 40px;
   width: 100%;
-  gap: 30px;
 }
 
 
-
-.profile-identity {
-  background-color: var(--color-cream);
-
+.profile-details-column {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  flex: 1;
+min-width: 0;
+  margin-top: 10px; /* Ajuste pour que le pseudo soit bien en face du haut de la photo */
 }
-
 .user-fullname {
-  font-family: var(--font-serif);
-  font-size: 42px;
-  margin-bottom: 10px;
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 1.1; /* Plus serré pour un look plus pro */
+  font-family: var(--font-serif); /* Pour le style élégant */
 }
-
 .stats-row {
   display: flex;
   gap: 40px;
@@ -119,12 +118,7 @@
   box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
 }
 
-.profile-upper-info {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  margin-bottom: 30px;
-}
+
 
 .large-avatar {
   width: 200px;
@@ -160,7 +154,7 @@
 }
 
 /* Edit Button */
-.edit-profile-action-btn {
+.edit-profile-action-btn, .save-profile-btn {
   background-color: var(--color-sage);
   color: white;
   border: none;
@@ -170,7 +164,76 @@
   cursor: pointer;
   opacity: 0.9;
 }
+.edit-mode-container {
+  padding: 40px;
+  text-align: center;
+}
 
+.edit-title {
+  color: #8fb39d;
+  margin-bottom: 40px;
+  font-size: 2rem;
+}
+
+.edit-grid {
+  display: flex;
+  justify-content: space-around;
+  text-align: left;
+  gap: 50px;
+}
+
+.edit-section {
+  flex: 1;
+}
+
+.edit-section h1 {
+  color: #8fb39d;
+  margin-bottom: 20px;
+  
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid #e0e7ff;
+  background-color: #f8faff;
+  outline: none;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.save-change-btn {
+  background-color: #8fb39d;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.save-change-btn:hover {
+  background-color: #7a9c88;
+}
 /* Tabs */
 .tabs-nav {
   display: flex;
@@ -206,6 +269,14 @@
   border-radius: 12px;
   position: relative;
   overflow: hidden;
+}
+
+.edit-section label{
+
+  font-size: small;
+  color: #666;
+
+
 }
 
 .skeleton.shimmer::after {
@@ -245,4 +316,112 @@
 }
 .modal-actions {
   display: flex; gap: 10px; margin-top: 20px;
+}
+
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative; /* Useful for absolute positioning button if preferred */
+  flex-shrink: 0; /* 👈 empêche l'image de rétrécir */
+
+}
+
+/* Local preview styling */
+.large-avatar.local-preview {
+  border: 3px dashed #FF6B6B; /* Optional: indicates changes not saved yet */
+}
+
+.change-photo-btn {
+  margin-top: 10px;
+  background-color: transparent;
+  color: #FF6B6B; /* Your Coral color */
+  border: 1px solid #FF6B6B;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.change-photo-btn:hover {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+
+.recipe-tag {
+  background-color: #f0f4f8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap; /* Empêche un tag de se couper en deux */
+}
+.add-tag-pill {
+  background: none;
+  border: 1px dashed #8fb39d;
+  color: #8fb39d;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.add-tag-pill:hover {
+  background-color: #f0f7f3;
+  border-style: solid;
+}
+
+.delete-tag-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tag-select-menu {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px dashed #a3b18a;
+  background: white;
+  color: #588157;
+  cursor: pointer;
+  outline: none;
+}
+
+.profile-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px; /* Espace réduit pour que les tags soient collés au nom */
+  margin-top: 10px; /* Aligne le haut du texte avec le haut de l'avatar */
+}
+
+
+.tags-section-pr{
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  /* Supprime justify-content: center ici */
+  justify-content: flex-start; 
+}
+.tags-container-centered { /* Utilise ce nom ou celui dans ton JSX */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  /* C'est ici qu'on force l'alignement à gauche */
+  justify-content: flex-start !important; 
+  max-width: 100%; /* Permet d'utiliser toute la largeur de la colonne */
 }
