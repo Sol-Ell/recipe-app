@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './Auth.css';
 import loginart from "../../assets/login-art.jpg"
-import logog from "../../assets/google-logo.png";
 import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
@@ -58,11 +57,11 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
               <label>Email</label>
               <div className="input-wrapper">
                 <input 
-                  name="email" // INDISPENSABLE pour handleChange
+                  name="email" 
                   type="email" 
                   placeholder="Example@email.com" 
                   value={formData.email} // Utiliser formData au lieu de email
-                  onChange={handleChange} // Appeler la fonction qui met à jour l'objet
+                  onChange={handleChange} 
                   required 
                 />
               </div>
@@ -89,9 +88,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
               </div>
             </div>
 
-            <div className="forgot-pw">
-              <a href="">Forgot Password?</a>
-            </div>
+            
 {error && (
   <div className="error-text-minimal">
     <span className="dot"></span>
@@ -100,14 +97,7 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
 )}
             <button type="submit" className="btn-signin">Sign in</button>
 
-            <div className="separator">
-              <span>Or</span>
-            </div>
-
-            <button type="button" className="btn-google">
-             <img src={logog} alt="Google Logo" />
-              Sign in with Google
-            </button>
+            
           </form>
 
           <p className="auth-footer">
