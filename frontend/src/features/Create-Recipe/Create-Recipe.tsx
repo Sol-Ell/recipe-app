@@ -3,9 +3,31 @@ import './Create-Recipe.css';
 import axios from 'axios';
 
 // Mock Data for consistent search
-const FOOD_DATABASE = ['Milk', 'Eggs', 'Chicken Breast', 'Tomato', 'Pasta', 'Olive Oil', 'Garlic'];
-const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican'];
-const DIETARY_TYPES = ['Healthy', 'Tasty', 'Veggie', 'Meat Lover', 'Low Calories'];
+const FOOD_DATABASE = [
+  // Protéines & Viandes
+  'Chicken Breast', 'Ground Beef', 'Pork Chops', 'Bacon', 'Salmon', 'Tuna', 'Cod', 'Shrimp', 'Tofu', 'Tempeh', 'Lamb Leg', 'Turkey', 'Duck Breast', 'Sardines', 'Mussels', 'Eggs', 'Prosciutto', 'Sausage',
+  // Légumes
+  'Tomato', 'Garlic', 'Onion', 'Spinach', 'Broccoli', 'Carrot', 'Zucchini', 'Eggplant', 'Bell Pepper', 'Cucumber', 'Potato', 'Sweet Potato', 'Pumpkin', 'Kale', 'Asparagus', 'Mushrooms', 'Leek', 'Celery', 'Cauliflower', 'Green Beans', 'Peas', 'Radish', 'Beetroot', 'Artichoke', 'Brussels Sprouts', 'Corn',
+  // Fruits
+  'Apple', 'Banana', 'Lemon', 'Lime', 'Orange', 'Strawberry', 'Blueberry', 'Raspberry', 'Mango', 'Pineapple', 'Avocado', 'Pear', 'Grape', 'Watermelon', 'Peach', 'Cherry', 'Kiwi', 'Fig', 'Pomegranate',
+  // Produits Laitiers & Fromages
+  'Milk', 'Greek Yogurt', 'Heavy Cream', 'Butter', 'Parmesan', 'Mozzarella', 'Cheddar', 'Feta', 'Ricotta', 'Goat Cheese', 'Blue Cheese', 'Mascarpone', 'Sour Cream',
+  // Épicerie & Féculents
+  'Pasta', 'Rice', 'Quinoa', 'Flour', 'Sugar', 'Brown Sugar', 'Honey', 'Maple Syrup', 'Lentils', 'Chickpeas', 'Black Beans', 'Couscous', 'Bulgur', 'Breadcrumbs', 'Oats', 'Cornstarch', 'Yeast',
+  // Huiles & Condiments
+  'Olive Oil', 'Coconut Oil', 'Sesame Oil', 'Soy Sauce', 'Dijon Mustard', 'Mayonnaise', 'Ketchup', 'Sriracha', 'Apple Cider Vinegar', 'Balsamic Vinegar', 'Tomato Paste', 'Tahini', 'Pesto', 'Peanut Butter',
+  // Herbes & Épices
+  'Basil', 'Parsley', 'Cilantro', 'Thyme', 'Rosemary', 'Oregano', 'Cinnamon', 'Paprika', 'Cumin', 'Turmeric', 'Chili Flakes', 'Ginger', 'Nutmeg', 'Vanilla Extract', 'Star Anise', 'Cardamom'
+];
+const CUISINE_STYLES = [
+  'French', 'Italian', 'Spanish', 'Japanese', 'Mexican', 
+  'Indian', 'Chinese', 'Thai', 'Greek', 'Moroccan', 
+  'Vietnamese', 'Korean', 'American', 'Middle Eastern', 'Mediterranean'
+];
+const DIETARY_TYPES = [
+  'Healthy', 'Veggie', 'Vegan', 'Meat Lover', 'Low Calories', 
+  'Gluten-Free', 'Keto', 'High Protein', 'Dairy-Free', 'Quick & Easy'
+];
 const MEAL_TYPES = ['Breakfast', 'Snack', 'Lunch', 'Dinner', 'Dessert'];
 
 const RecipeEditor: React.FC = () => {
