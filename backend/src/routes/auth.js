@@ -3,8 +3,10 @@ import User from '../models/User.js';
 
 import { getUserProfile } from "../controllers/UserProfile.js";
 
+
 import jwt from 'jsonwebtoken';
 import { protect } from '../middleware/auth.js';
+import { logout } from "../controllers/authControllers.js";
 
 // Route for Register
 const router = express.Router();//Will allow to work with router
@@ -64,6 +66,8 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: "Server error"});
     }
 })
+
+router.post("/logout", protect, logout);
 
 // Me
 router.get("/me", protect, async (req, res) => {
