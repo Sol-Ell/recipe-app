@@ -323,8 +323,6 @@ min-width: 0;
   flex-direction: column;
   align-items: center;
   position: relative; /* Useful for absolute positioning button if preferred */
-  flex-shrink: 0; /* 👈 empêche l'image de rétrécir */
-
 }
 
 /* Local preview styling */
@@ -348,80 +346,4 @@ min-width: 0;
 .change-photo-btn:hover {
   background-color: #FF6B6B;
   color: white;
-}
-
-
-.recipe-tag {
-  background-color: #f0f4f8;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap; /* Empêche un tag de se couper en deux */
-}
-.add-tag-pill {
-  background: none;
-  border: 1px dashed #8fb39d;
-  color: #8fb39d;
-  padding: 6px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-.add-tag-pill:hover {
-  background-color: #f0f7f3;
-  border-style: solid;
-}
-
-.delete-tag-btn {
-  background: #ff6b6b;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 1;
-}
-
-.tag-select-menu {
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px dashed #a3b18a;
-  background: white;
-  color: #588157;
-  cursor: pointer;
-  outline: none;
-}
-
-.profile-identity {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px; /* Espace réduit pour que les tags soient collés au nom */
-  margin-top: 10px; /* Aligne le haut du texte avec le haut de l'avatar */
-}
-
-
-.tags-section-pr{
-  display: flex;
-  width: 100%;
-  margin-top: 10px;
-  /* Supprime justify-content: center ici */
-  justify-content: flex-start; 
-}
-.tags-container-centered { /* Utilise ce nom ou celui dans ton JSX */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  /* C'est ici qu'on force l'alignement à gauche */
-  justify-content: flex-start !important; 
-  max-width: 100%; /* Permet d'utiliser toute la largeur de la colonne */
 }

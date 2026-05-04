@@ -12,30 +12,22 @@ const LEVEL = [
 ];
 
 interface ProfileProps {
-  setUser: (currentUser: any) => void;
+  setUser: (currentUser: any) => void; 
   currentUser: any;
 }
 
 const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  
   // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string>("");
-  const [activeModal, setActiveModal] = useState<'none' | 'tags' | 'category'>('none');
 
-  // --- TAGS STATE ---
-  const [tags, setTags] = useState<{ cuisine: string[], dietary: string[], level: string[] }>({
-    cuisine: currentUser?.cuisineTags || [],
-    dietary: currentUser?.dietaryTags || [],
-    level: currentUser?.levelTags || []
-  });
-
-  // --- EDITING STATES ---
+  // --- EDITING STATES (Avatar, Email, Password) ---
   const [newAvatar, setNewAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editData, setEditData] = useState({
@@ -45,32 +37,17 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     newEmail: ""
   });
 
+  // Check if the viewed profile belongs to the logged-in user
   const isOwnProfile = currentUser && id ? currentUser._id === id : false;
 
-  // --- TAG LOGIC ---
-  const toggleTag = (category: 'cuisine' | 'dietary' | 'level', tag: string) => {
-    setTags(prev => {
-      const currentList = prev[category];
-      const limit = category === 'level' ? 1 : 3;
-
-      if (currentList.includes(tag)) {
-        return { ...prev, [category]: currentList.filter(t => t !== tag) };
-      }
-      if (currentList.length >= limit) {
-        alert(`You can only select up to ${limit} ${category} tags.`);
-        return prev;
-      }
-      return { ...prev, [category]: [...currentList, tag] };
-    });
-  };
-
-  // --- DATA FETCHING ---
+  // --- 1. RECIPE FETCHING LOGIC ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        let endpoint = `/api/recipes/user/${id}`;
+        let endpoint = `/api/recipes/user/${id}`; 
+        
         if (activeTab === 'Likes') endpoint = '/api/recipes/my-likes';
 
         const res = await axios.get(endpoint, {
@@ -78,31 +55,37 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         });
         setRecipes(res.data);
       } catch (err) {
-        setRecipes([]);
+        setRecipes([]); 
       } finally {
-        setTimeout(() => setLoading(false), 800);
+        setTimeout(() => setLoading(false), 800); 
       }
     };
     fetchRecipes();
   }, [activeTab, id]);
 
-  const handleTriggerFileInput = () => fileInputRef.current?.click();
+  // --- 2. PROFILE IMAGE EDITING LOGIC ---
+  const handleTriggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setNewAvatar(reader.result as string);
+      reader.onloadend = () => {
+        setNewAvatar(reader.result as string);
+      };
       reader.readAsDataURL(file);
     }
   };
 
+  // --- 3. SAVE LOGIC (Updates Email, Password, and Avatar) ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
-    // Password Validation
+    // Validation: Check if passwords match
     if (editData.newPassword || editData.confirmPassword) {
       if (editData.newPassword !== editData.confirmPassword) {
         alert("Error: New passwords do not match!");
@@ -113,37 +96,34 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         return;
       }
     }
-
-    // Email Validation
     if (editData.newEmail) {
-      if (editData.currentEmailInput !== currentUser.email) {
-        alert("Error: The current email entered is incorrect.");
-        return;
-      }
-      if (editData.newEmail === currentUser.email) {
-        alert("Error: New email must be different from current.");
-        return;
-      }
+    if (editData.currentEmailInput !== currentUser.email) {
+      alert("Error: The current email entered is incorrect.");
+      return;
     }
+    
+    if (editData.newEmail === currentUser.email) {
+      alert("Error: New email must be different from the current one.");
+      return;
+    }
+  }
 
     try {
       const token = localStorage.getItem('token');
       const payload = {
         avatar: newAvatar || currentUser.avatar,
         email: editData.newEmail || currentUser.email,
-        password: editData.newPassword || undefined,
-        cuisineTags: tags.cuisine,
-        dietaryTags: tags.dietary,
-        levelTags: tags.level
+        password: editData.newPassword || undefined
       };
 
-      const res = await axios.patch(`/api/edit/update-profile`, payload, {
+      // API Call to update profile
+      const res = await axios.patch(`/api/users/update-profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.status === 200 || res.status === 201) {
         alert("Profile updated successfully! 🎉");
-        setUser(res.data.user);
+        setUser(res.data.user); // Update global user state
         setIsEditing(false);
         setNewAvatar(null);
       }
@@ -152,6 +132,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     }
   };
 
+  // --- UTILS ---
   const getAvatarColor = (name: string) => {
     const colors = ['#A3B18A', '#588157', '#3A5A40', '#344E41'];
     let hash = 0;
@@ -161,15 +142,16 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     return colors[Math.abs(hash) % colors.length];
   };
 
+  // --- RENDER SKELETON LOADING ---
   if (loading || !currentUser) {
     return (
       <div className="profile-page-wrapper">
         <div className="profile-top-background shimmer"></div>
         <div className="profile-main-card">
-          <div className="skeleton circle-md shimmer center"></div>
-          <div className="recipes-grid">
-            {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
-          </div>
+           <div className="skeleton circle-md shimmer center"></div>
+           <div className="recipes-grid">
+             {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
+           </div>
         </div>
       </div>
     );
@@ -180,6 +162,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       <div className="profile-top-background"></div>
 
       <div className="profile-main-card">
+        {/* HEADER SECTION */}
         <div className="profile-upper-info">
           <div className="avatar-container">
             {newAvatar ? (
@@ -194,31 +177,28 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
                 {(currentUser?.username || "P").charAt(0).toUpperCase()}
               </div>
             )}
+            
             {isEditing && (
-              <button className="change-photo-btn" onClick={handleTriggerFileInput}>Change Picture</button>
+              <button className="change-photo-btn" onClick={handleTriggerFileInput}>
+                Change Picture
+              </button>
             )}
-            <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              accept="image/*" 
+              onChange={handleFileChange} 
+            />
           </div>
-
-          <div className="profile-details-column">
-            <div className="profile-identity">
-              <h1 className="user-fullname">{currentUser?.username || "User Name"}</h1>
-            </div>
-            <div className="tags-section-pr">
-              <div className="tags-container-centered">
-                {[...tags.cuisine, ...tags.level, ...tags.dietary].map((tag, index) => (
-                  <span key={index} className="recipe-tag">{tag}</span>
-                ))}
-                {isEditing && (
-                  <button className="add-tag-pill" onClick={() => setActiveModal('tags')}>+ Edit Tags</button>
-                )}
-              </div>
-            </div>
+          
+          <div className="profile-identity">
+            <h1 className="user-fullname">{currentUser?.username || "User Name"}</h1>
           </div>
 
           {isOwnProfile && (
-            <button
-              className={isEditing ? "save-profile-btn" : "edit-profile-btn"}
+            <button 
+              className={isEditing ? "save-profile-btn" : "edit-profile-btn"} 
               onClick={isEditing ? handleSave : () => setIsEditing(true)}
             >
               {isEditing ? "Save changes" : "Edit profile"}
@@ -228,47 +208,98 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
 
         <hr className="divider" />
 
+        {/* CONDITIONAL CONTENT: EDIT MODE vs VIEW MODE */}
         {isEditing ? (
           <div className="edit-mode-container">
+            
+            
             <div className="edit-grid">
+              {/* LEFT SIDE: Password Form */}
               <div className="edit-section">
                 <h1>Change Password</h1>
                 <div className="input-group">
-                  <label>New password</label>
-                  <input name="newPassword" type="password" onChange={handleInputChange} />
+                  <label>Enter the new password</label>
+                  <input 
+                    name="newPassword"
+                    type="password"
+                    placeholder="New password"
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="input-group">
-                  <label>Confirm password</label>
-                  <input name="confirmPassword" type="password" onChange={handleInputChange} />
+                  <label>Confirm new password</label>
+                  <input 
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
 
+              {/* RIGHT SIDE: Email Form */}
               <div className="edit-section">
                 <h1>Change Email</h1>
                 <div className="input-group">
-                  <label>Actual email</label>
-                  <input name="currentEmailInput" type='email' value={editData.currentEmailInput} onChange={handleInputChange} />
+                  <label>Enter the actual email</label>
+                  <input 
+                  name="currentEmailInput"
+                  placeholder="Current email"
+                  type='email'
+                  onChange={handleInputChange} 
+                  value={editData.currentEmailInput}/>
+
                 </div>
                 <div className="input-group">
-                  <label>New email</label>
-                  <input name="newEmail" type="email" onChange={handleInputChange} />
+                  <label>Enter the new email</label>
+                  <input 
+                    name="newEmail"
+                    type="email"
+                    placeholder="New email"
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
             </div>
+
+            
           </div>
         ) : (
           <>
+            {/* NAVIGATION TABS (Only shown in View Mode) */}
             <nav className="tabs-nav">
-              <button className={activeTab === 'My Recipes' ? 'active' : ''} onClick={() => setActiveTab('My Recipes')}>
+              <button 
+                className={activeTab === 'My Recipes' ? 'active' : ''} 
+                onClick={() => setActiveTab('My Recipes')}
+              >
                 {isOwnProfile ? 'My Recipes' : 'Recipes'}
               </button>
+              
               {isOwnProfile && (
-                <button className={activeTab === 'Likes' ? 'active' : ''} onClick={() => setActiveTab('Likes')}>Likes</button>
+                <button 
+                  className={activeTab === 'Likes' ? 'active' : ''} 
+                  onClick={() => setActiveTab('Likes')}
+                >
+                  Likes
+                </button>
               )}
             </nav>
+
+            {/* RECIPES GRID */}
             <div className="recipes-grid">
               {recipes.length > 0 ? (
-                recipes.map(recipe => <RecipeCard key={recipe._id} {...recipe} />)
+                recipes.map(recipe => (
+                  <RecipeCard 
+                    key={recipe._id}
+                    variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
+                    title={recipe.title}
+                    time={recipe.cookingTime || "30 min"}
+                    category={recipe.category || "Food"}
+                    servings={recipe.servings || 2}
+                    rating={recipe.rating || 4}
+                    image={recipe.image}
+                  />
+                ))
               ) : (
                 <p className="no-data-msg">No recipes found here yet.</p>
               )}
@@ -276,51 +307,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
           </>
         )}
       </div>
-
-      {/* --- TAGS MODAL --- */}
-      {activeModal === 'tags' && (
-        <div className="modal-overlay">
-          <div className="tag-modal">
-            <div className="modal-header">
-              <span className="close-x" onClick={() => setActiveModal('none')}>ⓧ</span>
-              <h2>Edit Profile Tags</h2>
-              <span className="save-icon" onClick={() => setActiveModal('none')}>💾</span>
-            </div>
-            <div className="modal-body">
-              <div className="modal-section">
-                <div className="section-head"><h3>Cuisine Style</h3> <span>{tags.cuisine.length}/3</span></div>
-                <div className="tag-options">
-                  {CUISINE_STYLES.map(tag => (
-                    <button key={tag} className={`tag-opt ${tags.cuisine.includes(tag) ? 'selected' : ''}`} onClick={() => toggleTag('cuisine', tag)}>
-                      {tag} {tags.cuisine.includes(tag) ? '×' : '+'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="modal-section">
-                <div className="section-head"><h3>Level of cook</h3> <span>{tags.level.length}/1</span></div>
-                <div className="tag-options">
-                  {LEVEL.map(tag => (
-                    <button key={tag} className={`tag-opt ${tags.level.includes(tag) ? 'selected' : ''}`} onClick={() => toggleTag('level', tag)}>
-                      {tag} {tags.level.includes(tag) ? '×' : '+'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="modal-section">
-                <div className="section-head"><h3>Dietary/Type</h3> <span>{tags.dietary.length}/3</span></div>
-                <div className="tag-options">
-                  {DIETARY_TYPES.map(tag => (
-                    <button key={tag} className={`tag-opt ${tags.dietary.includes(tag) ? 'selected' : ''}`} onClick={() => toggleTag('dietary', tag)}>
-                      {tag} {tags.dietary.includes(tag) ? '×' : '+'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

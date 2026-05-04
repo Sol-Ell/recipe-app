@@ -1,0 +1,7 @@
+# Protect package and lock files to ensure dependency consistency
+/package.json @ghost
+/package-lock.json @ghost
+/backend/package.json @ghost
+/backend/package-lock.json @ghost
+/frontend/package.json @ghost
+/frontend/package-lock.json @ghost
