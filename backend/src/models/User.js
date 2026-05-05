@@ -10,6 +10,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    avatar: {
+        type: String,
+        default: function() {
+            // Cette fonction s'exécute SI l'utilisateur n'a pas de photo
+            return `https://ui-avatars.com/api/?name=${this.username}&background=588157&color=fff&bold=true`;
+        }
+    },
     savedRecipes: [{type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],//Reference from the /models/Recipe.js for saving the recipe
     password: {
         type: String,
