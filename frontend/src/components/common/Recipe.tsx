@@ -1,26 +1,25 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './Recipe.css';
+import { useNavigate } from 'react-router-dom';
 
-// ... (garde tes icônes TimerIcon, ForkKnifeIcon, etc. en haut)
 
 interface RecipeProps {
   id: string;
   variant: 'my-profile' | 'other-profile' | 'feed';
+  authorId?: string;
   title: string;
   image: string;
   authorName?: string;
-  authorAvatar?: string; // NOUVEAU
+  authorAvatar?: string;
   time: string;
   category: string;
   servings: number;
   rating?: number;
   isFavoriteInitial?: boolean;
   currentUser: any;
-  onOpenRecipeModal: (id: string) => void; 
+  onOpenRecipeModal?: (id: string) => void; 
 }
-/**
- * SVG Icons Components - À mettre avant le composant RecipeCard
- */
 const TimerIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 );
@@ -31,32 +30,54 @@ const UserIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
 const RecipeCard: React.FC<RecipeProps> = ({ 
-  id, variant, title, image, authorName, authorAvatar, time, category, servings, rating, 
+  id, authorId, variant, title, image, authorName, authorAvatar, time, category, servings, rating, 
   isFavoriteInitial, currentUser, onOpenRecipeModal 
 }) => {
   
   const [isFavorite, setIsFavorite] = useState(isFavoriteInitial || false);
+  const navigate = useNavigate();
+   const handleAuthorClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); 
+    if (authorId) {
+      navigate(`/profile/${authorId}`); 
+    }
+  };
 
-  const handleHeartClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleHeartClick = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêche d'ouvrir la recette quand on clique sur le cœur
     if (!currentUser) {
       window.alert("Login to like this masterclass ! 🍝");
       return;
     }
+   
+
+    // 1. Optimistic UI : On change le visuel TOUT DE SUITE
+    const previousState = isFavorite;
     setIsFavorite(!isFavorite);
+
+    // 2. Appel au serveur
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/recipes/${id}/like`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error("Erreur du serveur", error);
+      setIsFavorite(previousState);
+      alert("Erreur de connexion au serveur.");
+    }
   };
 
   return (
-    <div className="recipe-card-container" onClick={() => onOpenRecipeModal(id)}>
+    <div className="recipe-card-container" onClick={() => onOpenRecipeModal && onOpenRecipeModal(id)}>
       
-      {/* 1. HEADER : Photo du Chef + Nom */}
       {variant === 'feed' && (
-        <div className="card-author-header">
-          <img 
-            src={authorAvatar || 'https://via.placeholder.com/150'} 
-            alt={authorName} 
-            className="author-avatar-img"
-          />
+        <div 
+          className="card-author-header" 
+          onClick={handleAuthorClick} // 
+          style={{ cursor: 'pointer' }} 
+        >
+          <img src={authorAvatar || 'https://via.placeholder.com/150'} alt={authorName} className="author-avatar-img" />
           <span className="author-name">{authorName || "Chef Anonyme"}</span>
         </div>
       )}
@@ -70,7 +91,7 @@ const RecipeCard: React.FC<RecipeProps> = ({
             className={`card-like-btn ${isFavorite ? 'active' : ''}`} 
             onClick={handleHeartClick}
           >
-            <svg viewBox="0 0 24 24" className="heart-icon-svg">
+            <svg viewBox="0 0 24 24" className="heart-icon-svg" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
           </button>

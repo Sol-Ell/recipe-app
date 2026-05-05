@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/common/Recipe';
+import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal'; 
 import '../../index.css';
 import './Profile.css';
 
@@ -25,9 +26,20 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState<string>("");
+  
+  // NOUVEAU : On stocke l'utilisateur que l'on est en train de regarder
+  const [viewedUser, setViewedUser] = useState<any>(null);
 
-  // --- EDITING STATES (Avatar, Email, Password) ---
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+
+  const handleOpenModal = (recipeId: string) => {
+    // On cherche la recette complète dans notre liste grâce à son ID
+    const clickedRecipe = recipes.find(r => r._id === recipeId);
+    if (clickedRecipe) {
+      setSelectedRecipe(clickedRecipe);
+    }
+  };
+  // --- EDITING STATES ---
   const [newAvatar, setNewAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editData, setEditData] = useState({
@@ -37,16 +49,36 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     newEmail: ""
   });
 
-  // Check if the viewed profile belongs to the logged-in user
-  const isOwnProfile = currentUser && id ? currentUser._id === id : false;
+  // CORRECTION : Mieux gérer si c'est notre profil ou non
+  const isOwnProfile = !id || (currentUser && id === currentUser._id);
 
-  // --- 1. RECIPE FETCHING LOGIC ---
+  // --- NOUVEAU 1: FETCH DES INFOS DE L'UTILISATEUR ---
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (isOwnProfile) {
+        // Si c'est mon profil, on affiche mes infos direct
+        setViewedUser(currentUser);
+      } else if (id) {
+        // Si c'est un autre profil, on demande au serveur ses infos
+        try {
+          const res = await axios.get(`/api/users/profile/${id}`);
+          setViewedUser(res.data);
+        } catch (err) {
+          console.error("Utilisateur introuvable");
+        }
+      }
+    };
+    fetchUserData();
+  }, [id, currentUser, isOwnProfile]);
+
+  // --- 2. RECIPE FETCHING LOGIC ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        let endpoint = `/api/recipes/user/${id}`; 
+        const targetId = id || currentUser?._id; 
+        let endpoint = `/api/recipes/user/${targetId}`; 
         
         if (activeTab === 'Likes') endpoint = '/api/recipes/my-likes';
 
@@ -61,52 +93,34 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       }
     };
     fetchRecipes();
-  }, [activeTab, id]);
+  }, [activeTab, id, currentUser]); 
 
-  // --- 2. PROFILE IMAGE EDITING LOGIC ---
-  const handleTriggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
+  // --- PROFILE IMAGE EDITING LOGIC ---
+  const handleTriggerFileInput = () => fileInputRef.current?.click();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewAvatar(reader.result as string);
-      };
+      reader.onloadend = () => setNewAvatar(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  // --- 3. SAVE LOGIC (Updates Email, Password, and Avatar) ---
+  // --- SAVE LOGIC ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
-    // Validation: Check if passwords match
     if (editData.newPassword || editData.confirmPassword) {
-      if (editData.newPassword !== editData.confirmPassword) {
-        alert("Error: New passwords do not match!");
-        return;
-      }
-      if (editData.newPassword.length < 8) {
-        alert("Error: Password must be at least 8 characters.");
-        return;
-      }
+      if (editData.newPassword !== editData.confirmPassword) return alert("Error: New passwords do not match!");
+      if (editData.newPassword.length < 8) return alert("Error: Password must be at least 8 characters.");
     }
     if (editData.newEmail) {
-    if (editData.currentEmailInput !== currentUser.email) {
-      alert("Error: The current email entered is incorrect.");
-      return;
+      if (editData.currentEmailInput !== currentUser.email) return alert("Error: The current email entered is incorrect.");
+      if (editData.newEmail === currentUser.email) return alert("Error: New email must be different from the current one.");
     }
-    
-    if (editData.newEmail === currentUser.email) {
-      alert("Error: New email must be different from the current one.");
-      return;
-    }
-  }
 
     try {
       const token = localStorage.getItem('token');
@@ -116,14 +130,13 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         password: editData.newPassword || undefined
       };
 
-      // API Call to update profile
       const res = await axios.patch(`/api/users/update-profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.status === 200 || res.status === 201) {
         alert("Profile updated successfully! 🎉");
-        setUser(res.data.user); // Update global user state
+        setUser(res.data.user); 
         setIsEditing(false);
         setNewAvatar(null);
       }
@@ -132,18 +145,21 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     }
   };
 
-  // --- UTILS ---
   const getAvatarColor = (name: string) => {
     const colors = ['#A3B18A', '#588157', '#3A5A40', '#344E41'];
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
   };
 
-  // --- RENDER SKELETON LOADING ---
-  if (loading || !currentUser) {
+  // --- LOGIQUE DE TRI ---
+  const sortedRecipes = [...recipes].sort((a, b) => {
+    const aLiked = a.likes?.includes(currentUser?._id) ? 1 : 0;
+    const bLiked = b.likes?.includes(currentUser?._id) ? 1 : 0;
+    return bLiked - aLiked; 
+  });
+
+  if (loading || !viewedUser) {
     return (
       <div className="profile-page-wrapper">
         <div className="profile-top-background shimmer"></div>
@@ -162,19 +178,19 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       <div className="profile-top-background"></div>
 
       <div className="profile-main-card">
-        {/* HEADER SECTION */}
         <div className="profile-upper-info">
           <div className="avatar-container">
+            {/* NOUVEAU : On utilise viewedUser pour l'affichage public */}
             {newAvatar ? (
               <img src={newAvatar} alt="Preview" className="large-avatar local-preview" />
-            ) : currentUser?.avatar ? (
-              <img src={currentUser.avatar} alt="Profile" className="large-avatar" />
+            ) : viewedUser?.avatar ? (
+              <img src={viewedUser.avatar} alt="Profile" className="large-avatar" />
             ) : (
               <div
                 className="large-avatar fallback-avatar"
                 style={{ backgroundColor: getAvatarColor(currentUser?.username || "P") }}
               >
-                {(currentUser?.username || "P").charAt(0).toUpperCase()}
+                {(viewedUser?.username || "P").charAt(0).toUpperCase()}
               </div>
             )}
             
@@ -183,17 +199,12 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
                 Change Picture
               </button>
             )}
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
-              accept="image/*" 
-              onChange={handleFileChange} 
-            />
+            <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
           </div>
           
           <div className="profile-identity">
-            <h1 className="user-fullname">{currentUser?.username || "User Name"}</h1>
+            {/* NOUVEAU : On affiche le pseudo du viewedUser */}
+            <h1 className="user-fullname">{viewedUser?.username || "User Name"}</h1>
           </div>
 
           {isOwnProfile && (
@@ -208,97 +219,54 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
 
         <hr className="divider" />
 
-        {/* CONDITIONAL CONTENT: EDIT MODE vs VIEW MODE */}
         {isEditing ? (
           <div className="edit-mode-container">
-            
-            
             <div className="edit-grid">
-              {/* LEFT SIDE: Password Form */}
               <div className="edit-section">
                 <h1>Change Password</h1>
-                <div className="input-group">
-                  <label>Enter the new password</label>
-                  <input 
-                    name="newPassword"
-                    type="password"
-                    placeholder="New password"
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="input-group">
-                  <label>Confirm new password</label>
-                  <input 
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Confirm new password"
-                    onChange={handleInputChange}
-                  />
-                </div>
+                <div className="input-group"><label>Enter the new password</label><input name="newPassword" type="password" onChange={handleInputChange}/></div>
+                <div className="input-group"><label>Confirm new password</label><input name="confirmPassword" type="password" onChange={handleInputChange}/></div>
               </div>
-
-              {/* RIGHT SIDE: Email Form */}
               <div className="edit-section">
                 <h1>Change Email</h1>
-                <div className="input-group">
-                  <label>Enter the actual email</label>
-                  <input 
-                  name="currentEmailInput"
-                  placeholder="Current email"
-                  type='email'
-                  onChange={handleInputChange} 
-                  value={editData.currentEmailInput}/>
-
-                </div>
-                <div className="input-group">
-                  <label>Enter the new email</label>
-                  <input 
-                    name="newEmail"
-                    type="email"
-                    placeholder="New email"
-                    onChange={handleInputChange}
-                  />
-                </div>
+                <div className="input-group"><label>Enter the actual email</label><input name="currentEmailInput" type='email' onChange={handleInputChange} value={editData.currentEmailInput}/></div>
+                <div className="input-group"><label>Enter the new email</label><input name="newEmail" type="email" onChange={handleInputChange}/></div>
               </div>
             </div>
-
-            
           </div>
         ) : (
           <>
-            {/* NAVIGATION TABS (Only shown in View Mode) */}
             <nav className="tabs-nav">
-              <button 
-                className={activeTab === 'My Recipes' ? 'active' : ''} 
-                onClick={() => setActiveTab('My Recipes')}
-              >
+              <button className={activeTab === 'My Recipes' ? 'active' : ''} onClick={() => setActiveTab('My Recipes')}>
                 {isOwnProfile ? 'My Recipes' : 'Recipes'}
               </button>
-              
               {isOwnProfile && (
-                <button 
-                  className={activeTab === 'Likes' ? 'active' : ''} 
-                  onClick={() => setActiveTab('Likes')}
-                >
+                <button className={activeTab === 'Likes' ? 'active' : ''} onClick={() => setActiveTab('Likes')}>
                   Likes
                 </button>
               )}
             </nav>
 
-            {/* RECIPES GRID */}
             <div className="recipes-grid">
-              {recipes.length > 0 ? (
-                recipes.map(recipe => (
+              {sortedRecipes.length > 0 ? (
+                sortedRecipes.map(recipe => (
                   <RecipeCard 
-                    key={recipe._id}
-                    variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
-                    title={recipe.title}
-                    time={recipe.cookingTime || "30 min"}
-                    category={recipe.category || "Food"}
-                    servings={recipe.servings || 2}
-                    rating={recipe.rating || 4}
-                    image={recipe.image}
-                  />
+                  authorName={recipe.author?.username}
+                  authorAvatar={recipe.author?.avatar}
+                  key={recipe._id}
+                  id={recipe._id}
+                  authorId={typeof recipe.author === 'object' ? recipe.author?._id : recipe.author} 
+                  currentUser={currentUser}
+                  isFavoriteInitial={recipe.likes?.includes(currentUser?._id)} 
+                  variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
+                  title={recipe.title}
+                  time={recipe.cookingTime ? `${recipe.cookingTime} min` : "30 min"}
+                  category={recipe.category || "Food"}
+                  servings={recipe.servings || 2}
+                  rating={recipe.rating || 4}
+                  image={recipe.imageUrl || recipe.image} 
+                  onOpenRecipeModal={handleOpenModal} 
+      />
                 ))
               ) : (
                 <p className="no-data-msg">No recipes found here yet.</p>
@@ -307,6 +275,12 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
           </>
         )}
       </div>
+      {selectedRecipe && (
+        <RecipeDetailModal 
+          recipe={selectedRecipe} 
+          onClose={() => setSelectedRecipe(null)} 
+        />
+      )}
     </div>
   );
 };

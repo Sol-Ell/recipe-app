@@ -2,7 +2,8 @@ import express from 'express';
 import { 
   getUserRecipes, 
   getMyLikedRecipes, 
-  getMyDoneRecipes 
+  getMyDoneRecipes,
+  toggleLikeRecipe 
 } from '../controllers/recipeControllers.js';
 import { protect } from '../middleware/auth.js';
 
@@ -36,6 +37,7 @@ router.get('/my-done', protect, getMyDoneRecipes);
 
 //Retrieve the recipes's category
 router.get("/", protect, getRecipesCategory);
+router.put('/:id/like', protect, toggleLikeRecipe);
 
 //return all recipes it can find in the database
 router.get("/", protect, async (req, res) => {
