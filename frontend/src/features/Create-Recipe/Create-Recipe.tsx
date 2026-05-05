@@ -34,35 +34,53 @@ const RecipeEditor: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleSubmit = async () => {
   try {
-    // 1. On prépare les données (nettoyage)
+    // 1. Transformation des ingrédients (Backend : Array d'objets)
+    const formattedIngredients = recipe.ingredients.map(ing => ({
+      name: ing.name,
+      quantity: Number(ing.qty),
+      unit: ing.unit.toLowerCase() // Conversion en minuscule pour correspondre à l'enum ["l", "g", "pcs"...]
+    }));
+
+    // 2. Transformation des étapes (Backend : [String])
+    // On fusionne les titres de subsections et le contenu en un seul tableau de chaînes
+    const formattedSteps = recipe.subsections.flatMap(sub => {
+      const steps = sub.content.split('\n').filter(s => s.trim() !== '');
+      return [`SECTION: ${sub.title}`, ...steps];
+    });
+
+    // 3. Mapping de la catégorie (Adaptation aux Enums du Backend)
+    // On s'assure d'envoyer une valeur acceptée ou une valeur par défaut
+    const categoryMapping: { [key: string]: string } = {
+      'Lunch': 'Main Course',
+      'Dinner': 'Main Course',
+      'Snack': 'Appetizer',
+      'Dessert': 'Dessert',
+      'Breakfast': 'Appetizer'
+    };
+
     const recipeData = {
       title: recipe.title,
-      cookingTime: recipe.time,
-      category: recipe.category,
-      servings: recipe.servings,
-      cuisineTags: recipe.cuisineTags,
-      dietaryTags: recipe.dietaryTags,
-      ingredients: recipe.ingredients.map(ing => `${ing.qty} ${ing.unit} ${ing.name}`),
-      // Transformation des subsections pour coller à ton Backend
-      instructions: recipe.subsections.map(sub => ({
-        category: sub.title,
-        steps: sub.content.split('\n').filter(s => s.trim() !== '') // On crée un tableau à chaque saut de ligne
-      })),
-      imageUrl: recipe.image, // La chaîne Base64
+      servings: Number(recipe.servings),
+      ingredients: formattedIngredients,
+      category: categoryMapping[recipe.category] || "Main Course", // Sécurité Enum
+      steps: formattedSteps.length > 0 ? formattedSteps : ["Préparation par défaut"],
+      imageUrl: recipe.image, // Chaîne Base64
+      cookingTime: Number(recipe.time)
     };
 
     const token = localStorage.getItem('token');
+    
     const response = await axios.post('/api/recipes', recipeData, {
       headers: { Authorization: `Bearer ${token}` }
     });
+
     if (response.status === 201) {
       alert("Recette enregistrée avec succès ! 👨‍🍳");
-      // Optionnel : rediriger vers le home
-      // navigate('/home');
     }
   } catch (error: any) {
-    console.error("Erreur lors de la sauvegarde:", error.response?.data || error.message);
-    alert("Erreur : " + (error.response?.data?.message || "Impossible de sauvegarder."));
+    console.error("Erreur Backend:", error.response?.data);
+    const message = error.response?.data?.message || "Erreur lors de l'envoi";
+    alert(`Erreur : ${message}`);
   }
 };
   const [recipe, setRecipe] = useState({
