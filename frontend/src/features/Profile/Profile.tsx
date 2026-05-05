@@ -6,6 +6,12 @@ import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeD
 import '../../index.css';
 import './Profile.css';
 
+const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican'];
+const DIETARY_TYPES = ['Healthy', 'Tasty', 'Veggie', 'Meat Lover', 'Low Calories'];
+const LEVEL = [
+  'Beginner', 'Amateur', 'Intermediate', 'Advanced', 'Professional', 'Master Chef'
+];
+
 interface ProfileProps {
   setUser: (currentUser: any) => void; 
   currentUser: any;
@@ -180,9 +186,9 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
             ) : viewedUser?.avatar ? (
               <img src={viewedUser.avatar} alt="Profile" className="large-avatar" />
             ) : (
-              <div 
-                className="large-avatar fallback-avatar" 
-                style={{ backgroundColor: getAvatarColor(viewedUser?.username || "P") }}
+              <div
+                className="large-avatar fallback-avatar"
+                style={{ backgroundColor: getAvatarColor(currentUser?.username || "P") }}
               >
                 {(viewedUser?.username || "P").charAt(0).toUpperCase()}
               </div>

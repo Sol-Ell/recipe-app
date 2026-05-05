@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import { request, response } from "express";
+import bcrypt from "bcryptjs";
 
 export const getUserProfile = async (req, res) => {
   try {
@@ -39,17 +40,12 @@ export const getUserProfile = async (req, res) => {
   });
   }
 };
-// @desc    Récupérer le profil de n'importe quel utilisateur via son ID
-// @route   GET /api/users/profile/:id
 export const getUserById = async (req, res) => {
   try {
-    // 1. On récupère l'ID qui est dans l'URL (:id)
     const userId = req.params.id;
 
-    // 2. Recherche en base de données
     const user = await User.findById(userId).select('-password');
 
-    // 3. Si l'utilisateur n'existe pas
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
@@ -58,10 +54,43 @@ export const getUserById = async (req, res) => {
     res.status(200).json(user);
 
   } catch (error) {
-    // Gestion des erreurs d'ID mal formé (CastError)
     if (error.name === 'CastError') {
       return res.status(400).json({ message: "Format d'ID invalide" });
     }
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: "User not found in request" });
+
+    const userId = req.user._id; 
+    const { avatar, email, password, cuisineTags, dietaryTags, levelTags } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (avatar) user.avatar = avatar;
+    if (email) user.email = email;
+    if (cuisineTags) user.cuisineTags = cuisineTags;
+    if (dietaryTags) user.dietaryTags = dietaryTags;
+    if (levelTags) user.levelTags = levelTags;
+
+    if (password && password.trim() !== "") {
+       const salt = await bcrypt.genSalt(10);
+       user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+
+    // Réponse propre
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+    
+    res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    console.error("Erreur détaillée :", error); // TRÈS IMPORTANT pour voir le log dans ton terminal
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};  

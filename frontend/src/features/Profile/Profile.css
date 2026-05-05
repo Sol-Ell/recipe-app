@@ -5,29 +5,28 @@
 
 /* Container for the avatar, text info, and button */
 .profile-upper-info {
-  background-color: var(--color-cream);
   display: flex;
-  align-items: center; /* Aligne verticalement au centre */
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 40px;
   width: 100%;
-  gap: 30px;
 }
 
 
-
-.profile-identity {
-  background-color: var(--color-cream);
-
+.profile-details-column {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  flex: 1;
+min-width: 0;
+  margin-top: 10px; /* Ajuste pour que le pseudo soit bien en face du haut de la photo */
 }
-
 .user-fullname {
-  font-family: var(--font-serif);
-  font-size: 42px;
-  margin-bottom: 10px;
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 1.1; /* Plus serré pour un look plus pro */
+  font-family: var(--font-serif); /* Pour le style élégant */
 }
-
 .stats-row {
   display: flex;
   gap: 40px;
@@ -119,12 +118,7 @@
   box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
 }
 
-.profile-upper-info {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  margin-bottom: 30px;
-}
+
 
 .large-avatar {
   width: 200px;
