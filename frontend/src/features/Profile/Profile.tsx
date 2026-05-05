@@ -5,6 +5,12 @@ import RecipeCard from '../../components/common/Recipe';
 import '../../index.css';
 import './Profile.css';
 
+const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican'];
+const DIETARY_TYPES = ['Healthy', 'Tasty', 'Veggie', 'Meat Lover', 'Low Calories'];
+const LEVEL = [
+  'Beginner', 'Amateur', 'Intermediate', 'Advanced', 'Professional', 'Master Chef'
+];
+
 interface ProfileProps {
   setUser: (currentUser: any) => void; 
   currentUser: any;
@@ -164,8 +170,8 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
             ) : currentUser?.avatar ? (
               <img src={currentUser.avatar} alt="Profile" className="large-avatar" />
             ) : (
-              <div 
-                className="large-avatar fallback-avatar" 
+              <div
+                className="large-avatar fallback-avatar"
                 style={{ backgroundColor: getAvatarColor(currentUser?.username || "P") }}
               >
                 {(currentUser?.username || "P").charAt(0).toUpperCase()}
