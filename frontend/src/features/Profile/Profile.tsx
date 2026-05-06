@@ -1,74 +1,173 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import RecipeCard from '../../components/common/Recipe';
+import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeDetailModal'; 
 import '../../index.css';
 import './Profile.css';
 
+const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican'];
+const DIETARY_TYPES = ['Healthy', 'Tasty', 'Veggie', 'Meat Lover', 'Low Calories'];
+const LEVEL = [
+  'Beginner', 'Amateur', 'Intermediate', 'Advanced', 'Professional', 'Master Chef'
+];
+
 interface ProfileProps {
-  currentUser: any; // The authenticated user passed from App.tsx
+  setUser: (currentUser: any) => void; 
+  currentUser: any;
 }
 
-const Profile: React.FC<ProfileProps> = ({ currentUser }) => {
-  const { id } = useParams(); // Extracts the user ID from the URL string
+const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   
-  // Dynamic Check: Compare logged-in user ID with the Profile ID in the URL
-const isOwnProfile = currentUser && id ? currentUser._id === id : false;
+  // NOUVEAU : On stocke l'utilisateur que l'on est en train de regarder
+  const [viewedUser, setViewedUser] = useState<any>(null);
 
-  // 1. Fetching recipes based on the selected tab and user ID
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+
+  const handleOpenModal = (recipeId: string) => {
+    // On cherche la recette complète dans notre liste grâce à son ID
+    const clickedRecipe = recipes.find(r => r._id === recipeId);
+    if (clickedRecipe) {
+      setSelectedRecipe(clickedRecipe);
+    }
+  };
+  // --- EDITING STATES ---
+  const [newAvatar, setNewAvatar] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editData, setEditData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+    currentEmailInput: "",
+    newEmail: ""
+  });
+
+  // CORRECTION : Mieux gérer si c'est notre profil ou non
+  const isOwnProfile = !id || (currentUser && id === currentUser._id);
+
+  // --- NOUVEAU 1: FETCH DES INFOS DE L'UTILISATEUR ---
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (isOwnProfile) {
+        // Si c'est mon profil, on affiche mes infos direct
+        setViewedUser(currentUser);
+      } else if (id) {
+        // Si c'est un autre profil, on demande au serveur ses infos
+        try {
+          const res = await axios.get(`/api/users/profile/${id}`);
+          setViewedUser(res.data);
+        } catch (err) {
+          console.error("Utilisateur introuvable");
+        }
+      }
+    };
+    fetchUserData();
+  }, [id, currentUser, isOwnProfile]);
+
+  // --- 2. RECIPE FETCHING LOGIC ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        let endpoint = `/api/recipes/user/${id}`; // Default view
+        const targetId = id || currentUser?._id; 
+        let endpoint = `/api/recipes/user/${targetId}`; 
         
-        // Adjust endpoint based on navigation tab
         if (activeTab === 'Likes') endpoint = '/api/recipes/my-likes';
-        if (activeTab === 'Done') endpoint = '/api/recipes/my-done';
 
         const res = await axios.get(endpoint, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setRecipes(res.data);
       } catch (err) {
-        setRecipes([]); // Reset grid if request fails or data is empty
+        setRecipes([]); 
       } finally {
-        // Keeps the shimmer visible for a split second for better UX feel
         setTimeout(() => setLoading(false), 800); 
       }
     };
     fetchRecipes();
-  }, [activeTab, id]);
+  }, [activeTab, id, currentUser]); 
 
-  // 2. Generates a consistent background color based on the username string
+  // --- PROFILE IMAGE EDITING LOGIC ---
+  const handleTriggerFileInput = () => fileInputRef.current?.click();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setNewAvatar(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // --- SAVE LOGIC ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditData({ ...editData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    if (editData.newPassword || editData.confirmPassword) {
+      if (editData.newPassword !== editData.confirmPassword) return alert("Error: New passwords do not match!");
+      if (editData.newPassword.length < 8) return alert("Error: Password must be at least 8 characters.");
+    }
+    if (editData.newEmail) {
+      if (editData.currentEmailInput !== currentUser.email) return alert("Error: The current email entered is incorrect.");
+      if (editData.newEmail === currentUser.email) return alert("Error: New email must be different from the current one.");
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        avatar: newAvatar || currentUser.avatar,
+        email: editData.newEmail || currentUser.email,
+        password: editData.newPassword || undefined
+      };
+
+      const res = await axios.patch(`/api/users/update-profile`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 200 || res.status === 201) {
+        alert("Profile updated successfully! 🎉");
+        setUser(res.data.user); 
+        setIsEditing(false);
+        setNewAvatar(null);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update profile.");
+    }
+  };
+
   const getAvatarColor = (name: string) => {
     const colors = ['#A3B18A', '#588157', '#3A5A40', '#344E41'];
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
   };
 
- 
-  // --- SKELETON LOADING VIEW ---
-  if (loading || !currentUser) {
+  // --- LOGIQUE DE TRI ---
+  const sortedRecipes = [...recipes].sort((a, b) => {
+    const aLiked = a.likes?.includes(currentUser?._id) ? 1 : 0;
+    const bLiked = b.likes?.includes(currentUser?._id) ? 1 : 0;
+    return bLiked - aLiked; 
+  });
+
+  if (loading || !viewedUser) {
     return (
       <div className="profile-page-wrapper">
         <div className="profile-top-background shimmer"></div>
         <div className="profile-main-card">
-          <div className="profile-upper-info" style={{ flexDirection: 'column', alignItems: 'center' }}>
-            <div className="skeleton circle-md shimmer"></div>
-            <div className="skeleton title-md shimmer" style={{ marginTop: '20px' }}></div>
-          </div>
-          <div className="recipes-grid" style={{ marginTop: '50px' }}>
-            {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
-          </div>
+           <div className="skeleton circle-md shimmer center"></div>
+           <div className="recipes-grid">
+             {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
+           </div>
         </div>
       </div>
     );
@@ -80,114 +179,107 @@ const isOwnProfile = currentUser && id ? currentUser._id === id : false;
 
       <div className="profile-main-card">
         <div className="profile-upper-info">
-          {/* AVATAR: Render image if available, otherwise show initial with colored background */}
           <div className="avatar-container">
-            {currentUser?.avatar ? (
-              <img src={currentUser.avatar} alt="Profile" className="large-avatar" />
+            {/* NOUVEAU : On utilise viewedUser pour l'affichage public */}
+            {newAvatar ? (
+              <img src={newAvatar} alt="Preview" className="large-avatar local-preview" />
+            ) : viewedUser?.avatar ? (
+              <img src={viewedUser.avatar} alt="Profile" className="large-avatar" />
             ) : (
-              <div 
-                className="large-avatar fallback-avatar" 
+              <div
+                className="large-avatar fallback-avatar"
                 style={{ backgroundColor: getAvatarColor(currentUser?.username || "P") }}
               >
-                {(currentUser?.username || "P").charAt(0).toUpperCase()}
+                {(viewedUser?.username || "P").charAt(0).toUpperCase()}
               </div>
             )}
+            
+            {isEditing && (
+              <button className="change-photo-btn" onClick={handleTriggerFileInput}>
+                Change Picture
+              </button>
+            )}
+            <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
           </div>
           
           <div className="profile-identity">
-            <h1 className="user-fullname">{currentUser?.username || "User Name"}</h1>
-            
-            {/* Real-time stats from the database */}
-            <div className="stats-row">
-              <div className="stat-block">
-                <span className="stat-value">{currentUser?.followers?.length || 0}</span>
-                <span className="stat-label">followers</span>
-              </div>
-              <div className="stat-block">
-                <span className="stat-value">{currentUser?.following?.length || 0}</span>
-                <span className="stat-label">following</span>
-              </div>
-            </div>
+            {/* NOUVEAU : On affiche le pseudo du viewedUser */}
+            <h1 className="user-fullname">{viewedUser?.username || "User Name"}</h1>
           </div>
 
-          {/* Action button changes based on profile ownership */}
-          {isOwnProfile ? (
-            <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
-              Edit profile
+          {isOwnProfile && (
+            <button 
+              className={isEditing ? "save-profile-btn" : "edit-profile-btn"} 
+              onClick={isEditing ? handleSave : () => setIsEditing(true)}
+            >
+              {isEditing ? "Save changes" : "Edit profile"}
             </button>
-          ) : (
-            <button className="follow-btn">Follow</button>
           )}
         </div>
 
         <hr className="divider" />
 
-        {/* Navigation Tabs */}
-        <nav className="tabs-nav">
-          <button 
-            className={activeTab === 'My Recipes' ? 'active' : ''} 
-            onClick={() => setActiveTab('My Recipes')}
-          >
-            {isOwnProfile ? 'My Recipes' : 'Recipes'}
-          </button>
-          
-          {/* Private tabs: Only visible if browsing your own profile */}
-          {isOwnProfile && (
-            <>
-              <button 
-                className={activeTab === 'Likes' ? 'active' : ''} 
-                onClick={() => setActiveTab('Likes')}
-              >
-                Likes
-              </button>
-              <button 
-                className={activeTab === 'Done' ? 'active' : ''} 
-                onClick={() => setActiveTab('Done')}
-              >
-                Done
-              </button>
-            </>
-          )}
-        </nav>
-
-        {/* Recipes Rendering Grid */}
-        <div className="recipes-grid">
-          {recipes.length > 0 ? (
-            recipes.map(recipe => (
-              <RecipeCard 
-                key={recipe._id}
-                variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
-                title={recipe.title}
-                time={recipe.cookingTime || "30 min"}
-                category={recipe.category || "Food"}
-                servings={recipe.servings || 2}
-                rating={recipe.rating || 4}
-                image={recipe.image}
-              />
-            ))
-          ) : (
-            <p className="no-data-msg">No recipes found here yet.</p>
-          )}
-        </div>
-      </div>
-
-      {/* MODAL: Profile Update Form */}
-      {isEditModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Edit Profile</h2>
-            <div className="input-group">
-              <label>Username</label>
-              <input type="text" defaultValue={currentUser?.username} />
-            </div>
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setIsEditModalOpen(false)}>
-                Cancel
-              </button>
-              <button className="btn-save">Save Changes</button>
+        {isEditing ? (
+          <div className="edit-mode-container">
+            <div className="edit-grid">
+              <div className="edit-section">
+                <h1>Change Password</h1>
+                <div className="input-group"><label>Enter the new password</label><input name="newPassword" type="password" onChange={handleInputChange}/></div>
+                <div className="input-group"><label>Confirm new password</label><input name="confirmPassword" type="password" onChange={handleInputChange}/></div>
+              </div>
+              <div className="edit-section">
+                <h1>Change Email</h1>
+                <div className="input-group"><label>Enter the actual email</label><input name="currentEmailInput" type='email' onChange={handleInputChange} value={editData.currentEmailInput}/></div>
+                <div className="input-group"><label>Enter the new email</label><input name="newEmail" type="email" onChange={handleInputChange}/></div>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <nav className="tabs-nav">
+              <button className={activeTab === 'My Recipes' ? 'active' : ''} onClick={() => setActiveTab('My Recipes')}>
+                {isOwnProfile ? 'My Recipes' : 'Recipes'}
+              </button>
+              {isOwnProfile && (
+                <button className={activeTab === 'Likes' ? 'active' : ''} onClick={() => setActiveTab('Likes')}>
+                  Likes
+                </button>
+              )}
+            </nav>
+
+            <div className="recipes-grid">
+              {sortedRecipes.length > 0 ? (
+                sortedRecipes.map(recipe => (
+                  <RecipeCard 
+                  authorName={recipe.author?.username}
+                  authorAvatar={recipe.author?.avatar}
+                  key={recipe._id}
+                  id={recipe._id}
+                  authorId={typeof recipe.author === 'object' ? recipe.author?._id : recipe.author} 
+                  currentUser={currentUser}
+                  isFavoriteInitial={recipe.likes?.includes(currentUser?._id)} 
+                  variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
+                  title={recipe.title}
+                  time={recipe.cookingTime ? `${recipe.cookingTime} min` : "30 min"}
+                  category={recipe.category || "Food"}
+                  servings={recipe.servings || 2}
+                  rating={recipe.rating || 4}
+                  image={recipe.imageUrl || recipe.image} 
+                  onOpenRecipeModal={handleOpenModal} 
+      />
+                ))
+              ) : (
+                <p className="no-data-msg">No recipes found here yet.</p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      {selectedRecipe && (
+        <RecipeDetailModal 
+          recipe={selectedRecipe} 
+          onClose={() => setSelectedRecipe(null)} 
+        />
       )}
     </div>
   );

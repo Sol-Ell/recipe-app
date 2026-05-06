@@ -10,8 +10,7 @@ export const createRecipe = async (req, res) => {
     }
 
     // Récupère TOUS les champs nécessaires
-    const { title, servings, ingredients, category, steps, imageUrl, cookingTime } = req.body;
-
+const { title, servings, ingredients, category, steps, imageUrl, cookingTime } = req.body;
     const newRecipe = new Recipe({
       title,
       servings,
@@ -35,8 +34,8 @@ export const createRecipe = async (req, res) => {
 // Get recipes created by a specific user
 export const getUserRecipes = async (req, res) => {
   try {
-    // On cherche les recettes où l'auteur correspond à l'ID dans l'URL
-    const recipes = await Recipe.find({ author: req.params.id });
+    const recipes = await Recipe.find({ author: req.params.id })
+                                .populate('author', 'username avatar');
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération des recettes" });
@@ -48,22 +47,24 @@ export const getRecipesCategory = async (req, res) =>{ //Get Category and filter
     const {category, q} = req.query;
 
     let filter = {};
-
     if(category){
       //category manage
-      const allowedCategories = [
-      "Appetizer", "Main Course", "Dessert", "Vegetarian",
-     ];
+      const allowedCategories = ["Appetizer", "Main Course", "Dessert", "Vegetarian"];
       if(!allowedCategories.includes(category)){
         return res.status(400).json({ message: "Invalid category" });
       }
       filter.category = category;
     }
     //search manager
-    if (q){
-      filter.title = { $regex: q, $options: "i" }
+   if (q) {
+      filter.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { ingredients: { $elemMatch: { $regex: q, $options: "i" } } }
+      ];
     }
-    const recipes = await Recipe.find(filter).populate("author", "username");
+    
+    // 👈 MAGIE ICI : On ajoute l'avatar (il n'y avait que le username avant)
+    const recipes = await Recipe.find(filter).populate("author", "username avatar");
     res.status(200).json(recipes);
     } catch (error) {
     res.status(500).json({ message: error.message });
@@ -73,8 +74,8 @@ export const getRecipesCategory = async (req, res) =>{ //Get Category and filter
 // Get recipes liked by the logged-in user
 export const getMyLikedRecipes = async (req, res) => {
   try {
-    // We are looking for recipes where the user ID is present in the 'likes' array
-    const recipes = await Recipe.find({ likes: req.user._id });
+    const recipes = await Recipe.find({ likes: req.user._id })
+                                .populate('author', 'username avatar');
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving favorites" });
@@ -89,5 +90,71 @@ export const getMyDoneRecipes = async (req, res) => {
     res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving completed recipes" });
+  }
+};
+
+export const toggleLikeRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+
+    const userId = req.user._id.toString();
+    const isLiked = recipe.likes.includes(userId);
+
+    if (isLiked) {
+      // Si déjà liké, on le retire
+      recipe.likes = recipe.likes.filter(id => id.toString() !== userId);
+    } else {
+      // Sinon, on l'ajoute
+      recipe.likes.push(userId);
+    }
+
+    await recipe.save();
+    res.status(200).json({ message: "Like updated", likes: recipe.likes });
+  } catch (error) {
+    res.status(500).json({ message: "Error toggling like", error: error.message });
+  }
+};
+export const searchRecipes = async (req, res) => {
+  try {
+    const { q, page = 1, limit = 10 } = req.query;
+
+      //Empty request
+    if (!q || q.trim() === "") {
+      return res.status(200).json({
+        recipes: [],
+        total: 0,
+        message: "Empty query"
+      });
+    }
+
+    const regex = new RegExp(q, "i");
+
+    const filter = {
+      $or: [
+        { title: regex },
+        { ingredients: { $elemMatch: { $regex: regex } } }
+      ]
+    };
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const recipes = await Recipe.find(filter)
+      .populate("author", "username avatar")
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const total = await Recipe.countDocuments(filter);
+
+    res.status(200).json({
+      recipes,
+      total,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit)
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

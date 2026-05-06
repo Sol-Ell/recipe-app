@@ -2,7 +2,8 @@ import express from 'express';
 import { 
   getUserRecipes, 
   getMyLikedRecipes, 
-  getMyDoneRecipes 
+  getMyDoneRecipes,
+  toggleLikeRecipe 
 } from '../controllers/recipeControllers.js';
 import { protect } from '../middleware/auth.js';
 
@@ -11,6 +12,7 @@ import User from "../models/User.js";
 import { getRecipesCategory } from '../controllers/recipeControllers.js';
 import { createRecipe } from '../controllers/recipeControllers.js';
 import { body } from 'express-validator';
+import { searchRecipes } from '../controllers/recipeControllers.js';
 
 const router = express.Router();
 
@@ -36,16 +38,17 @@ router.get('/my-done', protect, getMyDoneRecipes);
 
 //Retrieve the recipes's category
 router.get("/", protect, getRecipesCategory);
+router.put('/:id/like', protect, toggleLikeRecipe);
 
 //return all recipes it can find in the database
-router.get("/", protect, async (req, res) => {
+/*router.get("/", protect, async (req, res) => {
   try{
     const response = await Recipe.find({});// return all the documents in that collection
     res.json(response);
   } catch (err) {
     res.json(err);
   }
-});
+});*/
 
 //routes for the recipe creation
 router.post("/", protect, recipeValidationRules, createRecipe);
@@ -98,4 +101,7 @@ router.get("/savedRecipes", protect, async (req, res) => {
     res.json(err);
   }
 });
+
+//Search the recipe 
+router.get("/search", searchRecipes);
 export default router;
