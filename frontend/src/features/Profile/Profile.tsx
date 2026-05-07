@@ -8,9 +8,7 @@ import './Profile.css';
 
 const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican'];
 const DIETARY_TYPES = ['Healthy', 'Tasty', 'Veggie', 'Meat Lover', 'Low Calories'];
-const LEVEL = [
-  'Beginner', 'Amateur', 'Intermediate', 'Advanced', 'Professional', 'Master Chef'
-];
+const LEVEL = ['Beginner', 'Amateur', 'Intermediate', 'Advanced', 'Professional', 'Master Chef'];
 
 interface ProfileProps {
   setUser: (currentUser: any) => void; 
@@ -20,48 +18,46 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  
-  // NOUVEAU : On stocke l'utilisateur que l'on est en train de regarder
+  const [activeModal, setActiveModal] = useState<'none' | 'tags'>('none');
   const [viewedUser, setViewedUser] = useState<any>(null);
-
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
 
-  const handleOpenModal = (recipeId: string) => {
-    // On cherche la recette complète dans notre liste grâce à son ID
-    const clickedRecipe = recipes.find(r => r._id === recipeId);
-    if (clickedRecipe) {
-      setSelectedRecipe(clickedRecipe);
-    }
-  };
+  // --- TAGS STATE ---
+  const [tags, setTags] = useState<{ cuisine: string[], dietary: string[], level: string[] }>({
+    cuisine: currentUser?.cuisineTags || [],
+    dietary: currentUser?.dietaryTags || [],
+    level: currentUser?.levelTags || []
+  });
+
   // --- EDITING STATES ---
   const [newAvatar, setNewAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editData, setEditData] = useState({
-    newPassword: "",
-    confirmPassword: "",
-    currentEmailInput: "",
-    newEmail: ""
+    newPassword: "", confirmPassword: "", currentEmailInput: "", newEmail: ""
   });
 
-  // CORRECTION : Mieux gérer si c'est notre profil ou non
   const isOwnProfile = !id || (currentUser && id === currentUser._id);
 
-  // --- NOUVEAU 1: FETCH DES INFOS DE L'UTILISATEUR ---
+  // --- FETCH USER DATA ---
   useEffect(() => {
     const fetchUserData = async () => {
       if (isOwnProfile) {
-        // Si c'est mon profil, on affiche mes infos direct
         setViewedUser(currentUser);
+        // Met à jour les tags si c'est notre profil
+        setTags({
+          cuisine: currentUser?.cuisineTags || [],
+          dietary: currentUser?.dietaryTags || [],
+          level: currentUser?.levelTags || []
+        });
       } else if (id) {
-        // Si c'est un autre profil, on demande au serveur ses infos
         try {
-          const res = await axios.get(`/api/users/profile/${id}`);
+          const res = await axios.get(`/api/edit/profile/${id}`); // CORRIGÉ
           setViewedUser(res.data);
         } catch (err) {
           console.error("Utilisateur introuvable");
@@ -71,7 +67,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     fetchUserData();
   }, [id, currentUser, isOwnProfile]);
 
-  // --- 2. RECIPE FETCHING LOGIC ---
+  // --- FETCH RECIPES ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
@@ -79,12 +75,9 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         const token = localStorage.getItem('token');
         const targetId = id || currentUser?._id; 
         let endpoint = `/api/recipes/user/${targetId}`; 
-        
         if (activeTab === 'Likes') endpoint = '/api/recipes/my-likes';
 
-        const res = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axios.get(endpoint, { headers: { Authorization: `Bearer ${token}` } });
         setRecipes(res.data);
       } catch (err) {
         setRecipes([]); 
@@ -95,9 +88,30 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     fetchRecipes();
   }, [activeTab, id, currentUser]); 
 
-  // --- PROFILE IMAGE EDITING LOGIC ---
-  const handleTriggerFileInput = () => fileInputRef.current?.click();
+  // --- TAG LOGIC ---
+  const toggleTag = (category: 'cuisine' | 'dietary' | 'level', tag: string) => {
+    setTags(prev => {
+      const currentList = prev[category];
+      const limit = category === 'level' ? 1 : 3;
 
+      if (currentList.includes(tag)) {
+        return { ...prev, [category]: currentList.filter(t => t !== tag) };
+      }
+      if (currentList.length >= limit) {
+        alert(`You can only select up to ${limit} ${category} tags.`);
+        return prev;
+      }
+      return { ...prev, [category]: [...currentList, tag] };
+    });
+  };
+
+  const handleOpenModal = (recipeId: string) => {
+    const clickedRecipe = recipes.find(r => r._id === recipeId);
+    if (clickedRecipe) setSelectedRecipe(clickedRecipe);
+  };
+
+  // --- FILE UPLOAD ---
+  const handleTriggerFileInput = () => fileInputRef.current?.click();
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -119,7 +133,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     }
     if (editData.newEmail) {
       if (editData.currentEmailInput !== currentUser.email) return alert("Error: The current email entered is incorrect.");
-      if (editData.newEmail === currentUser.email) return alert("Error: New email must be different from the current one.");
+      if (editData.newEmail === currentUser.email) return alert("Error: New email must be different from current.");
     }
 
     try {
@@ -127,10 +141,14 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       const payload = {
         avatar: newAvatar || currentUser.avatar,
         email: editData.newEmail || currentUser.email,
-        password: editData.newPassword || undefined
+        password: editData.newPassword || undefined,
+        cuisineTags: tags.cuisine,
+        dietaryTags: tags.dietary,
+        levelTags: tags.level
       };
 
-      const res = await axios.patch(`/api/users/update-profile`, payload, {
+      // CORRIGÉ : L'URL EST MAINTENANT LA BONNE !
+      const res = await axios.patch(`/api/edit/update-profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -145,14 +163,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     }
   };
 
-  const getAvatarColor = (name: string) => {
-    const colors = ['#A3B18A', '#588157', '#3A5A40', '#344E41'];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
-  };
-
-  // --- LOGIQUE DE TRI ---
+  // --- TRI RECETTES ---
   const sortedRecipes = [...recipes].sort((a, b) => {
     const aLiked = a.likes?.includes(currentUser?._id) ? 1 : 0;
     const bLiked = b.likes?.includes(currentUser?._id) ? 1 : 0;
@@ -165,13 +176,17 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         <div className="profile-top-background shimmer"></div>
         <div className="profile-main-card">
            <div className="skeleton circle-md shimmer center"></div>
-           <div className="recipes-grid">
-             {[1, 2, 3].map(i => <div key={i} className="skeleton card-lg shimmer"></div>)}
-           </div>
         </div>
       </div>
     );
   }
+
+  // Génération de l'avatar propre avec UI-Avatars si pas d'image
+  const profileName = viewedUser?.username || "User";
+  const displayAvatar = newAvatar || viewedUser?.avatar || `https://ui-avatars.com/api/?name=${profileName}&background=3A5A40&color=fff&size=150&bold=true`;
+
+  // Les tags à afficher (Ceux du profil regardé, pas forcément les nôtres)
+  const displayTags = isOwnProfile ? [...tags.cuisine, ...tags.level, ...tags.dietary] : [...(viewedUser?.cuisineTags || []), ...(viewedUser?.levelTags || []), ...(viewedUser?.dietaryTags || [])];
 
   return (
     <div className="profile-page-wrapper">
@@ -179,39 +194,32 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
 
       <div className="profile-main-card">
         <div className="profile-upper-info">
+          
           <div className="avatar-container">
-            {/* NOUVEAU : On utilise viewedUser pour l'affichage public */}
-            {newAvatar ? (
-              <img src={newAvatar} alt="Preview" className="large-avatar local-preview" />
-            ) : viewedUser?.avatar ? (
-              <img src={viewedUser.avatar} alt="Profile" className="large-avatar" />
-            ) : (
-              <div
-                className="large-avatar fallback-avatar"
-                style={{ backgroundColor: getAvatarColor(currentUser?.username || "P") }}
-              >
-                {(viewedUser?.username || "P").charAt(0).toUpperCase()}
-              </div>
-            )}
-            
-            {isEditing && (
-              <button className="change-photo-btn" onClick={handleTriggerFileInput}>
-                Change Picture
-              </button>
-            )}
+            <img src={displayAvatar} alt="Profile" className="large-avatar" />
+            {isEditing && <button className="change-photo-btn" onClick={handleTriggerFileInput}>Change Picture</button>}
             <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
           </div>
           
-          <div className="profile-identity">
-            {/* NOUVEAU : On affiche le pseudo du viewedUser */}
-            <h1 className="user-fullname">{viewedUser?.username || "User Name"}</h1>
+          <div className="profile-details-column">
+            <div className="profile-identity">
+              <h1 className="user-fullname">{profileName}</h1>
+            </div>
+
+            <div className="tags-section-pr">
+              <div className="tags-container-centered">
+                {displayTags.map((tag, index) => (
+                  <span key={index} className="recipe-tag">{tag}</span>
+                ))}
+                {isEditing && (
+                  <button className="add-tag-pill" onClick={() => setActiveModal('tags')}>+ Edit Tags</button>
+                )}
+              </div>
+            </div>
           </div>
 
           {isOwnProfile && (
-            <button 
-              className={isEditing ? "save-profile-btn" : "edit-profile-btn"} 
-              onClick={isEditing ? handleSave : () => setIsEditing(true)}
-            >
+            <button className={isEditing ? "save-profile-btn" : "edit-profile-btn"} onClick={isEditing ? handleSave : () => setIsEditing(true)}>
               {isEditing ? "Save changes" : "Edit profile"}
             </button>
           )}
@@ -224,13 +232,13 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
             <div className="edit-grid">
               <div className="edit-section">
                 <h1>Change Password</h1>
-                <div className="input-group"><label>Enter the new password</label><input name="newPassword" type="password" onChange={handleInputChange}/></div>
-                <div className="input-group"><label>Confirm new password</label><input name="confirmPassword" type="password" onChange={handleInputChange}/></div>
+                <div className="input-group"><label>New password</label><input name="newPassword" type="password" onChange={handleInputChange}/></div>
+                <div className="input-group"><label>Confirm password</label><input name="confirmPassword" type="password" onChange={handleInputChange}/></div>
               </div>
               <div className="edit-section">
                 <h1>Change Email</h1>
-                <div className="input-group"><label>Enter the actual email</label><input name="currentEmailInput" type='email' onChange={handleInputChange} value={editData.currentEmailInput}/></div>
-                <div className="input-group"><label>Enter the new email</label><input name="newEmail" type="email" onChange={handleInputChange}/></div>
+                <div className="input-group"><label>Actual email</label><input name="currentEmailInput" type='email' onChange={handleInputChange} value={editData.currentEmailInput}/></div>
+                <div className="input-group"><label>New email</label><input name="newEmail" type="email" onChange={handleInputChange}/></div>
               </div>
             </div>
           </div>
@@ -241,9 +249,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
                 {isOwnProfile ? 'My Recipes' : 'Recipes'}
               </button>
               {isOwnProfile && (
-                <button className={activeTab === 'Likes' ? 'active' : ''} onClick={() => setActiveTab('Likes')}>
-                  Likes
-                </button>
+                <button className={activeTab === 'Likes' ? 'active' : ''} onClick={() => setActiveTab('Likes')}>Likes</button>
               )}
             </nav>
 
@@ -251,22 +257,22 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
               {sortedRecipes.length > 0 ? (
                 sortedRecipes.map(recipe => (
                   <RecipeCard 
-                  authorName={recipe.author?.username}
-                  authorAvatar={recipe.author?.avatar}
-                  key={recipe._id}
-                  id={recipe._id}
-                  authorId={typeof recipe.author === 'object' ? recipe.author?._id : recipe.author} 
-                  currentUser={currentUser}
-                  isFavoriteInitial={recipe.likes?.includes(currentUser?._id)} 
-                  variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
-                  title={recipe.title}
-                  time={recipe.cookingTime ? `${recipe.cookingTime} min` : "30 min"}
-                  category={recipe.category || "Food"}
-                  servings={recipe.servings || 2}
-                  rating={recipe.rating || 4}
-                  image={recipe.imageUrl || recipe.image} 
-                  onOpenRecipeModal={handleOpenModal} 
-      />
+                    key={recipe._id}
+                    id={recipe._id}
+                    authorName={recipe.author?.username}
+                    authorAvatar={recipe.author?.avatar}
+                    authorId={typeof recipe.author === 'object' ? recipe.author?._id : recipe.author} 
+                    currentUser={currentUser}
+                    isFavoriteInitial={recipe.likes?.includes(currentUser?._id)} 
+                    variant={!isOwnProfile ? 'other-profile' : activeTab === 'My Recipes' ? 'my-profile' : 'feed'}
+                    title={recipe.title}
+                    time={recipe.cookingTime ? `${recipe.cookingTime} min` : "30 min"}
+                    category={recipe.category || "Food"}
+                    servings={recipe.servings || 2}
+                    rating={recipe.rating || 4}
+                    image={recipe.imageUrl || recipe.image} 
+                    onOpenRecipeModal={handleOpenModal} 
+                  />
                 ))
               ) : (
                 <p className="no-data-msg">No recipes found here yet.</p>
@@ -275,11 +281,55 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
           </>
         )}
       </div>
+
+      {/* --- TAGS MODAL --- */}
+      {activeModal === 'tags' && (
+        <div className="modal-overlay">
+          <div className="tag-modal">
+            <div className="modal-header">
+              <span className="close-x" onClick={() => setActiveModal('none')}>ⓧ</span>
+              <h2>Edit Profile Tags</h2>
+              <span className="save-icon" onClick={() => setActiveModal('none')}>💾</span>
+            </div>
+            <div className="modal-body">
+              <div className="modal-section">
+                <div className="section-head"><h3>Cuisine Style</h3> <span>{tags.cuisine.length}/3</span></div>
+                <div className="tag-options">
+                  {CUISINE_STYLES.map(tag => (
+                    <button key={tag} className={`tag-opt ${tags.cuisine.includes(tag) ? 'selected' : ''}`} onClick={() => toggleTag('cuisine', tag)}>
+                      {tag} {tags.cuisine.includes(tag) ? '×' : '+'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="modal-section">
+                <div className="section-head"><h3>Level of cook</h3> <span>{tags.level.length}/1</span></div>
+                <div className="tag-options">
+                  {LEVEL.map(tag => (
+                    <button key={tag} className={`tag-opt ${tags.level.includes(tag) ? 'selected' : ''}`} onClick={() => toggleTag('level', tag)}>
+                      {tag} {tags.level.includes(tag) ? '×' : '+'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="modal-section">
+                <div className="section-head"><h3>Dietary/Type</h3> <span>{tags.dietary.length}/3</span></div>
+                <div className="tag-options">
+                  {DIETARY_TYPES.map(tag => (
+                    <button key={tag} className={`tag-opt ${tags.dietary.includes(tag) ? 'selected' : ''}`} onClick={() => toggleTag('dietary', tag)}>
+                      {tag} {tags.dietary.includes(tag) ? '×' : '+'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- RECIPE MODAL --- */}
       {selectedRecipe && (
-        <RecipeDetailModal 
-          recipe={selectedRecipe} 
-          onClose={() => setSelectedRecipe(null)} 
-        />
+        <RecipeDetailModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
       )}
     </div>
   );
