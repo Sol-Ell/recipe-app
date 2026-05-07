@@ -20,7 +20,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, recipeId: null as string | null });
 
-  // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,14 +28,12 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const [viewedUser, setViewedUser] = useState<any>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
 
-  // --- TAGS STATE ---
   const [tags, setTags] = useState<{ cuisine: string[], dietary: string[], level: string[] }>({
     cuisine: currentUser?.cuisineTags || [],
     dietary: currentUser?.dietaryTags || [],
     level: currentUser?.levelTags || []
   });
 
-  // --- EDITING STATES ---
   const [newAvatar, setNewAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editData, setEditData] = useState({
@@ -45,12 +42,10 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
 
   const isOwnProfile = !id || (currentUser && id === currentUser._id);
 
-  // --- FETCH USER DATA ---
   useEffect(() => {
     const fetchUserData = async () => {
       if (isOwnProfile) {
         setViewedUser(currentUser);
-        // Met à jour les tags si c'est notre profil
         setTags({
           cuisine: currentUser?.cuisineTags || [],
           dietary: currentUser?.dietaryTags || [],
@@ -68,7 +63,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     fetchUserData();
   }, [id, currentUser, isOwnProfile]);
 
-  // --- FETCH RECIPES ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
@@ -89,7 +83,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     fetchRecipes();
   }, [activeTab, id, currentUser]); 
 
-  // --- TAG LOGIC ---
   const toggleTag = (category: 'cuisine' | 'dietary' | 'level', tag: string) => {
     setTags(prev => {
       const currentList = prev[category];
@@ -111,7 +104,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     if (clickedRecipe) setSelectedRecipe(clickedRecipe);
   };
 
-  // --- FILE UPLOAD ---
   const handleTriggerFileInput = () => fileInputRef.current?.click();
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -122,7 +114,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     }
   };
 
-  // --- SAVE LOGIC ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
@@ -148,7 +139,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         levelTags: tags.level
       };
 
-      // CORRIGÉ : L'URL EST MAINTENANT LA BONNE !
       const res = await axios.patch(`/api/edit/update-profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -190,11 +180,8 @@ useEffect(() => {
   return () => window.removeEventListener('click', closeMenu);
 }, [contextMenu]);
 
-  // --- TRI RECETTES ---
   const sortedRecipes = [...recipes].sort((a, b) => {
-    const aLiked = a.likes?.includes(currentUser?._id) ? 1 : 0;
-    const bLiked = b.likes?.includes(currentUser?._id) ? 1 : 0;
-    return bLiked - aLiked; 
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); 
   });
 
   if (loading || !viewedUser) {
@@ -208,11 +195,9 @@ useEffect(() => {
     );
   }
 
-  // Génération de l'avatar propre avec UI-Avatars si pas d'image
   const profileName = viewedUser?.username || "User";
   const displayAvatar = newAvatar || viewedUser?.avatar || `https://ui-avatars.com/api/?name=${profileName}&background=3A5A40&color=fff&size=150&bold=true`;
 
-  // Les tags à afficher (Ceux du profil regardé, pas forcément les nôtres)
   const displayTags = isOwnProfile ? [...tags.cuisine, ...tags.level, ...tags.dietary] : [...(viewedUser?.cuisineTags || []), ...(viewedUser?.levelTags || []), ...(viewedUser?.dietaryTags || [])];
 
   return (
@@ -285,12 +270,10 @@ useEffect(() => {
                 sortedRecipes.map(recipe => (
                   <div 
   key={recipe._id} 
-  style={{ cursor: 'context-menu' }} // 👈 Petit bonus : change la souris pour montrer qu'il y a un menu
+  style={{ cursor: 'context-menu' }} 
   onContextMenu={(e) => {
-    // 1. ON BLOQUE LE MENU DE GOOGLE CHROME EN PREMIER !
     e.preventDefault(); 
     
-    // 2. On affiche notre propre menu
     if (isOwnProfile && activeTab === 'My Recipes') {
       setContextMenu({ visible: true, x: e.pageX, y: e.pageY, recipeId: recipe._id });
     }
@@ -399,7 +382,6 @@ useEffect(() => {
           </button>
         </div>
       )}
-      {/* 👆👆👆 ======================================== 👆👆👆 */}
 
     </div>
   );

@@ -38,24 +38,19 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
     displayTags.push("Gourmand", "Fait Maison");
   }
 
-  // 👈 LA MAGIE DE LA LECTURE DES SECTIONS EST ICI
   const parsedSections: { title: string, steps: string[] }[] = [];
   let currentSection = { title: "Préparation", steps: [] as string[] };
 
   rawSteps.forEach((step: string) => {
     if (step.startsWith('SECTION:')) {
-      // On sauvegarde la section en cours avant d'en créer une nouvelle
       if (currentSection.steps.length > 0 || currentSection.title !== "Préparation") {
         parsedSections.push(currentSection);
       }
-      // On démarre la nouvelle section
       currentSection = { title: step.replace('SECTION:', '').trim(), steps: [] };
     } else {
-      // C'est une étape normale, on l'ajoute à la section en cours
       currentSection.steps.push(step);
     }
   });
-  // On n'oublie pas de sauvegarder la toute dernière section !
   if (currentSection.steps.length > 0) {
     parsedSections.push(currentSection);
   }
@@ -66,13 +61,11 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
         <button className="rd-close-btn" onClick={onClose}>&times;</button>
         
         <div className="rd-grid">
-          {/* GAUCHE : Visuel */}
           <div className="rd-image-side">
             <img src={recipe.imageUrl || recipe.image || 'https://via.placeholder.com/400'} alt={recipe.title} />
             <div className="rd-badge">{recipe.category || 'Gourmet'}</div>
           </div>
 
-          {/* DROITE : Infos */}
           <div className="rd-info-side">
             <header>
               <h1>{recipe.title}</h1>
@@ -113,12 +106,10 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </ul>
               </section>
 
-              {/* 👈 AFFICHAGE DYNAMIQUE DES SECTIONS */}
               <section className="rd-instructions-container">
                 {parsedSections.length > 0 ? (
                   parsedSections.map((section, idx) => (
                     <div key={idx} style={{ marginBottom: '20px' }}>
-                      {/* Le titre de la sous-section (ex: Conservation, Topping...) */}
                       <h3 style={{ color: '#588157', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '10px' }}>
                         {section.title}
                       </h3>
