@@ -28,6 +28,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const [viewedUser, setViewedUser] = useState<any>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
 
+  // --- TAGS STATE ---
   const [tags, setTags] = useState<{ cuisine: string[], dietary: string[], level: string[] }>({
     cuisine: currentUser?.cuisineTags || [],
     dietary: currentUser?.dietaryTags || [],

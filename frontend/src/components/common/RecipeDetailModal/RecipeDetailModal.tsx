@@ -13,7 +13,7 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   if (!recipe) return null;
 
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
-  const rawSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
+  const steps = Array.isArray(recipe.steps) ? recipe.steps : [];
 
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -34,25 +34,9 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
 
   const displayTags = [...cuisineTags, ...dietaryTags, ...levelTags];
 
+  // S'il n'y a absolument aucun tag, on en met par défaut pour le design
   if (displayTags.length === 0) {
     displayTags.push("Gourmand", "Fait Maison");
-  }
-
-  const parsedSections: { title: string, steps: string[] }[] = [];
-  let currentSection = { title: "Préparation", steps: [] as string[] };
-
-  rawSteps.forEach((step: string) => {
-    if (step.startsWith('SECTION:')) {
-      if (currentSection.steps.length > 0 || currentSection.title !== "Préparation") {
-        parsedSections.push(currentSection);
-      }
-      currentSection = { title: step.replace('SECTION:', '').trim(), steps: [] };
-    } else {
-      currentSection.steps.push(step);
-    }
-  });
-  if (currentSection.steps.length > 0) {
-    parsedSections.push(currentSection);
   }
 
   return (
@@ -85,6 +69,7 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </p>
               </div>
 
+              {/* 👈 AFFICHAGE STRICT DES TAGS */}
               <div className="rd-tags-wrapper">
                 {displayTags.map((tag, i) => (
                   <span key={i} className="rd-tag-item">
