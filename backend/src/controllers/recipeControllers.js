@@ -104,10 +104,8 @@ export const toggleLikeRecipe = async (req, res) => {
     const isLiked = recipe.likes.includes(userId);
 
     if (isLiked) {
-      // Si déjà liké, on le retire
       recipe.likes = recipe.likes.filter(id => id.toString() !== userId);
     } else {
-      // Sinon, on l'ajoute
       recipe.likes.push(userId);
     }
 
@@ -158,5 +156,73 @@ export const searchRecipes = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+export const getRecipeById = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id).populate('author', 'username avatar');
+    if (!recipe) {
+      return res.status(404).json({ message: "Recette introuvable." });
+    }
+    res.status(200).json(recipe);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération de la recette.", error: error.message });
+  }
+};
+
+export const updateRecipe = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recette introuvable." });
+    }
+
+    if (recipe.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Non autorisé. Tu ne peux modifier que tes propres recettes !" });
+    }
+
+    const { title, servings, ingredients, category, steps, imageUrl, cookingTime, cuisineTags, dietaryTags } = req.body;
+
+    recipe.title = title || recipe.title;
+    recipe.servings = servings || recipe.servings;
+    recipe.ingredients = ingredients || recipe.ingredients;
+    recipe.category = category || recipe.category;
+    recipe.steps = steps || recipe.steps;
+    recipe.imageUrl = imageUrl || recipe.imageUrl;
+    recipe.cookingTime = cookingTime || recipe.cookingTime;
+    recipe.cuisineTags = cuisineTags || recipe.cuisineTags;
+    recipe.dietaryTags = dietaryTags || recipe.dietaryTags;
+
+    const updatedRecipe = await recipe.save();
+    res.status(200).json(updatedRecipe);
+
+  } catch (error) {
+    console.error("Erreur de mise à jour:", error);
+    res.status(500).json({ message: "Erreur serveur lors de la mise à jour.", error: error.message });
+  }
+};
+
+export const deleteRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recette introuvable." });
+    }
+
+    if (recipe.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Non autorisé. Tu ne peux supprimer que tes propres recettes !" });
+    }
+
+    await Recipe.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Recette supprimée avec succès ! 🗑️" });
+
+  } catch (error) {
+    console.error("Erreur de suppression:", error);
+    res.status(500).json({ message: "Erreur serveur lors de la suppression.", error: error.message });
   }
 };

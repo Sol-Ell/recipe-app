@@ -13,7 +13,7 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   if (!recipe) return null;
 
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
-  const steps = Array.isArray(recipe.steps) ? recipe.steps : [];
+  const rawSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
 
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -28,17 +28,36 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   const authorName = recipe.author?.username || "Chef Anonyme";
   const authorAvatar = recipe.author?.avatar || `https://ui-avatars.com/api/?name=${authorName}&background=588157&color=fff&bold=true`;
 
-  // 👈 LA VRAIE MAGIE DES TAGS (Uniquement les vrais tags : French, Veggie...)
-  // On priorise les tags de la recette. S'il n'y en a pas, on prend ceux du chef.
   const cuisineTags = recipe.cuisineTags || recipe.author?.cuisineTags || [];
   const dietaryTags = recipe.dietaryTags || recipe.author?.dietaryTags || [];
   const levelTags = recipe.levelTags || recipe.author?.levelTags || [];
 
   const displayTags = [...cuisineTags, ...dietaryTags, ...levelTags];
 
-  // S'il n'y a absolument aucun tag, on en met par défaut pour le design
   if (displayTags.length === 0) {
     displayTags.push("Gourmand", "Fait Maison");
+  }
+
+  // 👈 LA MAGIE DE LA LECTURE DES SECTIONS EST ICI
+  const parsedSections: { title: string, steps: string[] }[] = [];
+  let currentSection = { title: "Préparation", steps: [] as string[] };
+
+  rawSteps.forEach((step: string) => {
+    if (step.startsWith('SECTION:')) {
+      // On sauvegarde la section en cours avant d'en créer une nouvelle
+      if (currentSection.steps.length > 0 || currentSection.title !== "Préparation") {
+        parsedSections.push(currentSection);
+      }
+      // On démarre la nouvelle section
+      currentSection = { title: step.replace('SECTION:', '').trim(), steps: [] };
+    } else {
+      // C'est une étape normale, on l'ajoute à la section en cours
+      currentSection.steps.push(step);
+    }
+  });
+  // On n'oublie pas de sauvegarder la toute dernière section !
+  if (currentSection.steps.length > 0) {
+    parsedSections.push(currentSection);
   }
 
   return (
@@ -73,7 +92,6 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </p>
               </div>
 
-              {/* 👈 AFFICHAGE STRICT DES TAGS */}
               <div className="rd-tags-wrapper">
                 {displayTags.map((tag, i) => (
                   <span key={i} className="rd-tag-item">
@@ -95,18 +113,32 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </ul>
               </section>
 
-              <section>
-                <h3>Préparation</h3>
-                {steps.length > 0 ? (
-                  <div className="rd-step-section">
-                    {steps.map((step: string, i: number) => (
-                      <p key={i}>{step}</p>
-                    ))}
-                  </div>
+              {/* 👈 AFFICHAGE DYNAMIQUE DES SECTIONS */}
+              <section className="rd-instructions-container">
+                {parsedSections.length > 0 ? (
+                  parsedSections.map((section, idx) => (
+                    <div key={idx} style={{ marginBottom: '20px' }}>
+                      {/* Le titre de la sous-section (ex: Conservation, Topping...) */}
+                      <h3 style={{ color: '#588157', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '10px' }}>
+                        {section.title}
+                      </h3>
+                      
+                      {/* Les étapes de cette sous-section */}
+                      <div className="rd-step-section">
+                        {section.steps.map((step: string, stepIdx: number) => (
+                          <p key={stepIdx} style={{ marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 'bold', marginRight: '8px', color: '#3A5A40' }}>{stepIdx + 1}.</span> 
+                            {step}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ))
                 ) : (
                   <p>Aucune instruction pour le moment.</p>
                 )}
               </section>
+
             </div>
           </div>
         </div>

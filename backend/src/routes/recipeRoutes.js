@@ -3,7 +3,10 @@ import {
   getUserRecipes, 
   getMyLikedRecipes, 
   getMyDoneRecipes,
-  toggleLikeRecipe 
+  toggleLikeRecipe,
+  getRecipeById,
+  updateRecipe,
+  deleteRecipe
 } from '../controllers/recipeControllers.js';
 import { protect } from '../middleware/auth.js';
 
@@ -39,6 +42,9 @@ router.get('/my-done', protect, getMyDoneRecipes);
 //Retrieve the recipes's category
 router.get("/", protect, getRecipesCategory);
 router.put('/:id/like', protect, toggleLikeRecipe);
+router.get("/:id", protect, getRecipeById);
+router.put("/:id", protect, recipeValidationRules, updateRecipe);
+router.delete("/:id", protect, deleteRecipe);
 
 //return all recipes it can find in the database
 /*router.get("/", protect, async (req, res) => {

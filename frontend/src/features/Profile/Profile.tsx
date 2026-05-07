@@ -18,6 +18,7 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, recipeId: null as string | null });
 
   // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
@@ -162,6 +163,32 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       alert(err.response?.data?.message || "Failed to update profile.");
     }
   };
+  const handleEditRecipe = () => {
+  if (contextMenu.recipeId) {
+    navigate(`/edit-recipe/${contextMenu.recipeId}`);
+  }
+};
+
+const handleDeleteRecipe = async () => {
+  if (!contextMenu.recipeId) return;
+  if (window.confirm("Es-tu sûr de vouloir supprimer cette recette ? 🗑️")) {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/recipes/${contextMenu.recipeId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRecipes(prev => prev.filter(r => r._id !== contextMenu.recipeId));
+      alert("Recette supprimée !");
+    } catch (err) {
+      alert("Erreur lors de la suppression");
+    }
+  }
+};
+useEffect(() => {
+  const closeMenu = () => setContextMenu({ ...contextMenu, visible: false });
+  window.addEventListener('click', closeMenu);
+  return () => window.removeEventListener('click', closeMenu);
+}, [contextMenu]);
 
   // --- TRI RECETTES ---
   const sortedRecipes = [...recipes].sort((a, b) => {
@@ -256,6 +283,19 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
             <div className="recipes-grid">
               {sortedRecipes.length > 0 ? (
                 sortedRecipes.map(recipe => (
+                  <div 
+  key={recipe._id} 
+  style={{ cursor: 'context-menu' }} // 👈 Petit bonus : change la souris pour montrer qu'il y a un menu
+  onContextMenu={(e) => {
+    // 1. ON BLOQUE LE MENU DE GOOGLE CHROME EN PREMIER !
+    e.preventDefault(); 
+    
+    // 2. On affiche notre propre menu
+    if (isOwnProfile && activeTab === 'My Recipes') {
+      setContextMenu({ visible: true, x: e.pageX, y: e.pageY, recipeId: recipe._id });
+    }
+  }}
+>
                   <RecipeCard 
                     key={recipe._id}
                     id={recipe._id}
@@ -273,6 +313,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
                     image={recipe.imageUrl || recipe.image} 
                     onOpenRecipeModal={handleOpenModal} 
                   />
+                  </div>
                 ))
               ) : (
                 <p className="no-data-msg">No recipes found here yet.</p>
@@ -331,6 +372,35 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       {selectedRecipe && (
         <RecipeDetailModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
       )}
+      {contextMenu.visible && (
+        <div 
+          style={{
+            position: 'absolute', top: contextMenu.y, left: contextMenu.x,
+            backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000, overflow: 'hidden', minWidth: '120px'
+          }}
+          onClick={(e) => e.stopPropagation()} // Empêche le menu de se fermer tout seul quand on clique dedans
+        >
+          <button 
+            style={{ display: 'block', width: '100%', padding: '10px 15px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '0.9rem', color: '#3A5A40', fontWeight: 'bold' }}
+            onClick={handleEditRecipe}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f2'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            ✏️ Edit
+          </button>
+          <button 
+            style={{ display: 'block', width: '100%', padding: '10px 15px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '0.9rem', color: '#d90429', fontWeight: 'bold' }}
+            onClick={handleDeleteRecipe}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef0f0'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      )}
+      {/* 👆👆👆 ======================================== 👆👆👆 */}
+
     </div>
   );
 };
