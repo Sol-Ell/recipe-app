@@ -10,7 +10,7 @@ export const createRecipe = async (req, res) => {
     }
 
     // Récupère TOUS les champs nécessaires
-const { title, servings, ingredients, category, steps, imageUrl, cookingTime } = req.body;
+const { title, servings, ingredients, category, steps, imageUrl, cookingTime, cuisineTags, dietaryTags } = req.body;
     const newRecipe = new Recipe({
       title,
       servings,
@@ -19,6 +19,8 @@ const { title, servings, ingredients, category, steps, imageUrl, cookingTime } =
       steps,
       imageUrl,
       cookingTime,
+      cuisineTags,
+      dietaryTags,
       author: req.user._id, 
     });
 

@@ -65,7 +65,10 @@ const RecipeEditor: React.FC = () => {
       category: categoryMapping[recipe.category] || "Main Course", // Sécurité Enum
       steps: formattedSteps.length > 0 ? formattedSteps : ["Préparation par défaut"],
       imageUrl: recipe.image, // Chaîne Base64
-      cookingTime: Number(recipe.time)
+      cookingTime: Number(recipe.time),
+      // 👈 LA CORRECTION EST LÀ : On ajoute les tags au colis !
+      cuisineTags: recipe.cuisineTags,
+      dietaryTags: recipe.dietaryTags
     };
 
     const token = localStorage.getItem('token');
@@ -88,8 +91,8 @@ const RecipeEditor: React.FC = () => {
     time: 30,
     category: 'Snack',
     servings: 4,
-    cuisineTags: ['French'] as string[],
-    dietaryTags: ['Healthy', 'Tasty'] as string[],
+    cuisineTags: [] as string[],
+    dietaryTags: [] as string[],
     ingredients: [{ id: 1, name: 'Milk', qty: '2', unit: 'L' }],
     subsections: [] as { id: number; title: string; content: string }[],
     image: null as string | null,
