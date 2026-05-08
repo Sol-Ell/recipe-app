@@ -160,3 +160,12 @@ export const searchRecipes = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+export const getAllRecipes = async(req, res)=>{
+  try{
+    const recipes = await Recipe.find().populate("author", "username").sort({createdAt: -1});
+    res.status("200").json(recipes);
+  } catch(error){
+    res.status("500").json({message: "Error retrieving stream"});
+  }
+
+}

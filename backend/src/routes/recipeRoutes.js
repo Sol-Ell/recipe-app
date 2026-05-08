@@ -13,6 +13,7 @@ import { getRecipesCategory } from '../controllers/recipeControllers.js';
 import { createRecipe } from '../controllers/recipeControllers.js';
 import { body } from 'express-validator';
 import { searchRecipes } from '../controllers/recipeControllers.js';
+import { getAllRecipes } from '../controllers/recipeControllers.js';
 
 const router = express.Router();
 
@@ -104,4 +105,5 @@ router.get("/savedRecipes", protect, async (req, res) => {
 
 //Search the recipe 
 router.get("/search", searchRecipes);
+router.get("/", protect, getAllRecipes);
 export default router;
