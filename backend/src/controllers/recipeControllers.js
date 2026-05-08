@@ -169,3 +169,69 @@ export const getAllRecipes = async(req, res)=>{
   }
 
 }
+
+export const updateIngredients = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ingredients } = req.body;
+
+    // Look for the recipe first
+    const recipe = await Recipe.findById(id);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recette non trouvée." });
+    }
+
+    // Verify that the user is indeed the author. We compare the ID of the recipe author with the ID of the logged-in user (req.user).
+    if (recipe.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Unauthorized action: you are not the author." });
+    }
+
+    // 3. Validation de la structure
+    if (!Array.isArray(ingredients) || ingredients.length === 0) {
+      return res.status(400).json({ message: "At least one valid ingredient is required." });
+    }
+
+    // 4. Mise à jour
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      id,
+      { $set: { ingredients: ingredients } },
+      { new: true, runValidators: true }
+    ).populate("author", "username");
+
+    res.status(200).json(updatedRecipe);
+  } catch (error) {
+    console.error("Update ingredients error:", error);
+    res.status(500).json({ message: "Error during updating" });
+  }
+};
+
+// Dans recipeControllers.js
+export const deleteIngredient = async (req, res) => {
+  try {
+    const { id, ingredientId } = req.params; // We need the recipe ID AND the ingredient ID
+
+    // We look for the recipe and we check the author
+    const recipe = await Recipe.findById(id);
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+
+    if (recipe.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    // We don't want to remove the last ingredient because your Recipe.js schema says "validate: v.length > 0"
+    if (recipe.ingredients.length <= 1) {
+      return res.status(400).json({ message: "A recipe should have at least one recipe." });
+    }
+
+    // 3. Suppression via $pull
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      id,
+      { $pull: { ingredients: { _id: ingredientId } } },
+      { new: true }
+    );
+
+    res.status(200).json(updatedRecipe);
+  } catch (error) {
+    res.status(500).json({ message: "Error during deletion" });
+  }
+};

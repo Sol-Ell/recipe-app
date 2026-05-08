@@ -14,6 +14,8 @@ import { createRecipe } from '../controllers/recipeControllers.js';
 import { body } from 'express-validator';
 import { searchRecipes } from '../controllers/recipeControllers.js';
 import { getAllRecipes } from '../controllers/recipeControllers.js';
+import { updateIngredients } from '../controllers/recipeControllers.js';
+import { deleteIngredient } from '../controllers/recipeControllers.js';
 
 const router = express.Router();
 
@@ -104,6 +106,8 @@ router.get("/savedRecipes", protect, async (req, res) => {
 });
 
 //Search the recipe 
-router.get("/search", searchRecipes);
-router.get("/", protect, getAllRecipes);
+router.get("/search", searchRecipes); // Route for search the recipe
+router.get("/", protect, getAllRecipes); // Route to gell all the recipe from the database
+router.put("/:id/ingredients", protect, updateIngredients); //Route for updating a recipe
+router.delete("/:id/ingredients/:ingredientId", protect, deleteIngredient); // Route for deleting a recipe
 export default router;
