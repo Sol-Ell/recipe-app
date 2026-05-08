@@ -22,11 +22,11 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     const fetchAllRecipes = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token'); // Récupère le token stocké
+        const token = localStorage.getItem('token'); // Retrieve the token stored
 
         const response = await axios.get('/api/recipes', {
           headers: {
-            Authorization: `Bearer ${token}` // Envoie le token au backend
+            Authorization: `Bearer ${token}` // Send the token to the backend
           }
         });
         setRecipes(response.data);
