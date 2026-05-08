@@ -28,8 +28,6 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   const authorName = recipe.author?.username || "Chef Anonyme";
   const authorAvatar = recipe.author?.avatar || `https://ui-avatars.com/api/?name=${authorName}&background=588157&color=fff&bold=true`;
 
-  // 👈 LA VRAIE MAGIE DES TAGS (Uniquement les vrais tags : French, Veggie...)
-  // On priorise les tags de la recette. S'il n'y en a pas, on prend ceux du chef.
   const cuisineTags = recipe.cuisineTags || recipe.author?.cuisineTags || [];
   const dietaryTags = recipe.dietaryTags || recipe.author?.dietaryTags || [];
   const levelTags = recipe.levelTags || recipe.author?.levelTags || [];
@@ -47,13 +45,11 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
         <button className="rd-close-btn" onClick={onClose}>&times;</button>
         
         <div className="rd-grid">
-          {/* GAUCHE : Visuel */}
           <div className="rd-image-side">
             <img src={recipe.imageUrl || recipe.image || 'https://via.placeholder.com/400'} alt={recipe.title} />
             <div className="rd-badge">{recipe.category || 'Gourmet'}</div>
           </div>
 
-          {/* DROITE : Infos */}
           <div className="rd-info-side">
             <header>
               <h1>{recipe.title}</h1>
@@ -95,18 +91,30 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </ul>
               </section>
 
-              <section>
-                <h3>Préparation</h3>
-                {steps.length > 0 ? (
-                  <div className="rd-step-section">
-                    {steps.map((step: string, i: number) => (
-                      <p key={i}>{step}</p>
-                    ))}
-                  </div>
+              <section className="rd-instructions-container">
+                {parsedSections.length > 0 ? (
+                  parsedSections.map((section, idx) => (
+                    <div key={idx} style={{ marginBottom: '20px' }}>
+                      <h3 style={{ color: '#588157', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '10px' }}>
+                        {section.title}
+                      </h3>
+                      
+                      {/* Les étapes de cette sous-section */}
+                      <div className="rd-step-section">
+                        {section.steps.map((step: string, stepIdx: number) => (
+                          <p key={stepIdx} style={{ marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 'bold', marginRight: '8px', color: '#3A5A40' }}>{stepIdx + 1}.</span> 
+                            {step}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ))
                 ) : (
                   <p>Aucune instruction pour le moment.</p>
                 )}
               </section>
+
             </div>
           </div>
         </div>

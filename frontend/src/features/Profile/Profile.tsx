@@ -18,8 +18,8 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, recipeId: null as string | null });
 
-  // --- UI & NAVIGATION STATES ---
   const [activeTab, setActiveTab] = useState('My Recipes');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     level: currentUser?.levelTags || []
   });
 
-  // --- EDITING STATES ---
   const [newAvatar, setNewAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editData, setEditData] = useState({
@@ -44,12 +43,10 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
 
   const isOwnProfile = !id || (currentUser && id === currentUser._id);
 
-  // --- FETCH USER DATA ---
   useEffect(() => {
     const fetchUserData = async () => {
       if (isOwnProfile) {
         setViewedUser(currentUser);
-        // Met à jour les tags si c'est notre profil
         setTags({
           cuisine: currentUser?.cuisineTags || [],
           dietary: currentUser?.dietaryTags || [],
@@ -67,7 +64,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     fetchUserData();
   }, [id, currentUser, isOwnProfile]);
 
-  // --- FETCH RECIPES ---
   useEffect(() => {
     const fetchRecipes = async () => {
       setLoading(true);
@@ -88,7 +84,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     fetchRecipes();
   }, [activeTab, id, currentUser]); 
 
-  // --- TAG LOGIC ---
   const toggleTag = (category: 'cuisine' | 'dietary' | 'level', tag: string) => {
     setTags(prev => {
       const currentList = prev[category];
@@ -110,7 +105,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     if (clickedRecipe) setSelectedRecipe(clickedRecipe);
   };
 
-  // --- FILE UPLOAD ---
   const handleTriggerFileInput = () => fileInputRef.current?.click();
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -121,7 +115,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     }
   };
 
-  // --- SAVE LOGIC ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
@@ -147,7 +140,6 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
         levelTags: tags.level
       };
 
-      // CORRIGÉ : L'URL EST MAINTENANT LA BONNE !
       const res = await axios.patch(`/api/edit/update-profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -162,12 +154,35 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       alert(err.response?.data?.message || "Failed to update profile.");
     }
   };
+  const handleEditRecipe = () => {
+  if (contextMenu.recipeId) {
+    navigate(`/edit-recipe/${contextMenu.recipeId}`);
+  }
+};
 
-  // --- TRI RECETTES ---
+const handleDeleteRecipe = async () => {
+  if (!contextMenu.recipeId) return;
+  if (window.confirm("Es-tu sûr de vouloir supprimer cette recette ? 🗑️")) {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/recipes/${contextMenu.recipeId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRecipes(prev => prev.filter(r => r._id !== contextMenu.recipeId));
+      alert("Recette supprimée !");
+    } catch (err) {
+      alert("Erreur lors de la suppression");
+    }
+  }
+};
+useEffect(() => {
+  const closeMenu = () => setContextMenu({ ...contextMenu, visible: false });
+  window.addEventListener('click', closeMenu);
+  return () => window.removeEventListener('click', closeMenu);
+}, [contextMenu]);
+
   const sortedRecipes = [...recipes].sort((a, b) => {
-    const aLiked = a.likes?.includes(currentUser?._id) ? 1 : 0;
-    const bLiked = b.likes?.includes(currentUser?._id) ? 1 : 0;
-    return bLiked - aLiked; 
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); 
   });
 
   if (loading || !viewedUser) {
@@ -181,11 +196,9 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
     );
   }
 
-  // Génération de l'avatar propre avec UI-Avatars si pas d'image
   const profileName = viewedUser?.username || "User";
   const displayAvatar = newAvatar || viewedUser?.avatar || `https://ui-avatars.com/api/?name=${profileName}&background=3A5A40&color=fff&size=150&bold=true`;
 
-  // Les tags à afficher (Ceux du profil regardé, pas forcément les nôtres)
   const displayTags = isOwnProfile ? [...tags.cuisine, ...tags.level, ...tags.dietary] : [...(viewedUser?.cuisineTags || []), ...(viewedUser?.levelTags || []), ...(viewedUser?.dietaryTags || [])];
 
   return (
@@ -256,6 +269,17 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
             <div className="recipes-grid">
               {sortedRecipes.length > 0 ? (
                 sortedRecipes.map(recipe => (
+                  <div 
+  key={recipe._id} 
+  style={{ cursor: 'context-menu' }} 
+  onContextMenu={(e) => {
+    e.preventDefault(); 
+    
+    if (isOwnProfile && activeTab === 'My Recipes') {
+      setContextMenu({ visible: true, x: e.pageX, y: e.pageY, recipeId: recipe._id });
+    }
+  }}
+>
                   <RecipeCard 
                     key={recipe._id}
                     id={recipe._id}
@@ -273,6 +297,7 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
                     image={recipe.imageUrl || recipe.image} 
                     onOpenRecipeModal={handleOpenModal} 
                   />
+                  </div>
                 ))
               ) : (
                 <p className="no-data-msg">No recipes found here yet.</p>
@@ -331,6 +356,34 @@ const Profile: React.FC<ProfileProps> = ({ currentUser, setUser }) => {
       {selectedRecipe && (
         <RecipeDetailModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
       )}
+      {contextMenu.visible && (
+        <div 
+          style={{
+            position: 'absolute', top: contextMenu.y, left: contextMenu.x,
+            backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000, overflow: 'hidden', minWidth: '120px'
+          }}
+          onClick={(e) => e.stopPropagation()} // Empêche le menu de se fermer tout seul quand on clique dedans
+        >
+          <button 
+            style={{ display: 'block', width: '100%', padding: '10px 15px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '0.9rem', color: '#3A5A40', fontWeight: 'bold' }}
+            onClick={handleEditRecipe}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f2'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            ✏️ Edit
+          </button>
+          <button 
+            style={{ display: 'block', width: '100%', padding: '10px 15px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: '0.9rem', color: '#d90429', fontWeight: 'bold' }}
+            onClick={handleDeleteRecipe}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef0f0'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      )}
+
     </div>
   );
 };

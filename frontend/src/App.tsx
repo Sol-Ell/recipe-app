@@ -8,6 +8,8 @@ import Create from './features/Create-Recipe/Create-Recipe'
 import SearchPage from './features/SearchPage/SearchPage';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+        import EditRecipe from './features/Create-Recipe/Edit-Recipe';
+
 
 const App : React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -59,6 +61,7 @@ const App : React.FC = () => {
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register setUser={setUser} />} />
         <Route path="/create-recipe" element={<Create />} />
+        <Route path="/edit-recipe/:id" element={<EditRecipe />} />
         <Route path="/" element={<Home currentUser={user}/>} />
         <Route path="/search/:query" element={<SearchPage currentUser={user} />} />
 
@@ -66,7 +69,7 @@ const App : React.FC = () => {
         {/* On garde la key pour forcer le refresh si on change de profil via l'URL */}
         <Route 
           path="/profile/:id" 
-          element={<Profile key={window.location.pathname} currentUser={user} />} 
+          element={<Profile key={window.location.pathname} currentUser={user} setUser={setUser} />} 
         />
         
         <Route path="/home" element={<Home currentUser={user} />} />
