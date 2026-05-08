@@ -53,6 +53,9 @@ const recipeSchema = mongoose.Schema({
     required: [true, "Le temps de cuisson est requis"],
     min: [1, "Le temps doit être supérieur à 0"]
   },
+
+  cuisineTags: [{ type: String }],
+  dietaryTags: [{ type: String }],
   // Critère : author (ObjectId reference to User)
   author: {
     type: mongoose.Schema.Types.ObjectId,

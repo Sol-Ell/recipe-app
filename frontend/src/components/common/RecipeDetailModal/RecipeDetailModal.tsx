@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // 👈 NOUVEAU : Pour pouvoir rediriger
+import { useNavigate } from 'react-router-dom';
 import './RecipeDetailModal.css';
 
 interface RecipeModalProps {
@@ -8,30 +8,38 @@ interface RecipeModalProps {
 }
 
 const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
-  const navigate = useNavigate(); // 👈 Initialise la navigation
+  const navigate = useNavigate();
 
   if (!recipe) return null;
 
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
-  
-  // 👈 CORRECTION : Ton backend envoie "steps" (et non "instructions") 
   const steps = Array.isArray(recipe.steps) ? recipe.steps : [];
 
-  // 👈 NOUVELLE FONCTION : Clic sur le chef
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // On récupère l'ID du chef (selon si le backend a envoyé un objet complet ou juste l'ID)
     const authorId = typeof recipe.author === 'object' ? recipe.author?._id : recipe.author;
     
     if (authorId) {
-      onClose(); // On ferme la modale pour que ce soit propre
-      navigate(`/profile/${authorId}`); // On navigue vers son profil
+      onClose();
+      navigate(`/profile/${authorId}`);
     }
   };
 
-  // Sécurisation des données de l'auteur
   const authorName = recipe.author?.username || "Chef Anonyme";
-  const authorAvatar = recipe.author?.avatar || 'https://via.placeholder.com/40';
+  const authorAvatar = recipe.author?.avatar || `https://ui-avatars.com/api/?name=${authorName}&background=588157&color=fff&bold=true`;
+
+  // 👈 LA VRAIE MAGIE DES TAGS (Uniquement les vrais tags : French, Veggie...)
+  // On priorise les tags de la recette. S'il n'y en a pas, on prend ceux du chef.
+  const cuisineTags = recipe.cuisineTags || recipe.author?.cuisineTags || [];
+  const dietaryTags = recipe.dietaryTags || recipe.author?.dietaryTags || [];
+  const levelTags = recipe.levelTags || recipe.author?.levelTags || [];
+
+  const displayTags = [...cuisineTags, ...dietaryTags, ...levelTags];
+
+  // S'il n'y a absolument aucun tag, on en met par défaut pour le design
+  if (displayTags.length === 0) {
+    displayTags.push("Gourmand", "Fait Maison");
+  }
 
   return (
     <div className="rd-overlay" onClick={onClose}>
@@ -50,14 +58,10 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
             <header>
               <h1>{recipe.title}</h1>
               
-              {/* 👈 NOUVEAU : Zone Auteur cliquable avec Photo (PP) et Nom */}
               <div 
                 className="rd-author-clickable" 
                 onClick={handleAuthorClick}
-                style={{ 
-                  display: 'flex', alignItems: 'center', gap: '10px', 
-                  cursor: 'pointer', marginTop: '10px', marginBottom: '15px' 
-                }}
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginTop: '10px', marginBottom: '15px' }}
               >
                 <img 
                   src={authorAvatar} 
@@ -69,8 +73,9 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </p>
               </div>
 
+              {/* 👈 AFFICHAGE STRICT DES TAGS */}
               <div className="rd-tags-wrapper">
-                {[...(recipe.cuisineTags || []), ...(recipe.dietaryTags || ["Tasty"])].map((tag, i) => (
+                {displayTags.map((tag, i) => (
                   <span key={i} className="rd-tag-item">
                     <span className="rd-tag-dot">#</span> {tag}
                   </span>
@@ -94,9 +99,8 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 <h3>Préparation</h3>
                 {steps.length > 0 ? (
                   <div className="rd-step-section">
-                    {/* 👈 CORRECTION : Adapté à ta base de données (liste simple) */}
                     {steps.map((step: string, i: number) => (
-                      <p > {step}</p>
+                      <p key={i}>{step}</p>
                     ))}
                   </div>
                 ) : (
