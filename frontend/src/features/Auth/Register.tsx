@@ -46,7 +46,7 @@ const Register: React.FC<RegisterProps> = ({ setUser }) => {
         localStorage.setItem("token", res.data.token);
         
         setUser(res.data); // Maintenant setUser est reconnu !
-        navigate('/');
+        window.location.href = '/';
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || "Registration failed");

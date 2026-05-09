@@ -203,3 +203,65 @@
   display: flex;
   align-items: center;
 }
+
+@media (max-width: 768px) {
+  .main-navbar {
+    padding: 10px 20px; /* Réduction des marges sur les côtés */
+    height: auto; /* Permet à la barre de s'étendre si nécessaire */
+    flex-wrap: wrap; /* Les éléments passent à la ligne si besoin */
+    gap: 10px;
+  }
+
+  /* 1. Logo : On le réduit un peu */
+  .navbar-tacos-logo {
+    height: 60px; 
+  }
+  
+  .logo-text {
+    display: none; /* Cache le texte du logo pour gagner de la place */
+  }
+
+  /* 2. Search Section : On la force en bas pour qu'elle prenne toute la largeur */
+  .nav-search-section {
+    order: 3; /* Passe en 3ème position (en dessous) */
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  .search-wrapper {
+    max-width: 100%; /* Prend toute la largeur disponible */
+    padding: 6px 15px;
+  }
+
+  /* 3. User Section : On cache le nom pour ne garder que l'avatar */
+  .nav-user-section {
+    order: 2; /* Reste en haut à droite */
+  }
+
+  .nav-display-name {
+    display: none; /* Cache "Jean-Michel" sur mobile */
+  }
+
+  .nav-profile-trigger {
+    padding: 0; /* Plus compact */
+  }
+
+  /* Dropdown Menu : Ajustement pour mobile */
+  .nav-dropdown-menu {
+    top: 55px;
+    right: -10px;
+    width: 200px;
+  }
+}
+
+/* Très petits écrans (iPhone SE, etc.) */
+@media (max-width: 480px) {
+  .navbar-tacos-logo {
+    height: 50px;
+  }
+  
+  .nav-avatar-circle {
+    width: 35px;
+    height: 35px;
+  }
+}
