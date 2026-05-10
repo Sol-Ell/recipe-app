@@ -3,7 +3,6 @@ import axios from 'axios';
 import './Recipe.css';
 import { useNavigate } from 'react-router-dom';
 
-
 interface RecipeProps {
   id: string;
   variant: 'my-profile' | 'other-profile' | 'feed';
@@ -20,6 +19,7 @@ interface RecipeProps {
   currentUser: any;
   onOpenRecipeModal?: (id: string) => void; 
 }
+
 const TimerIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 );
@@ -29,6 +29,7 @@ const ForkKnifeIcon = () => (
 const UserIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
+
 const RecipeCard: React.FC<RecipeProps> = ({ 
   id, authorId, variant, title, image, authorName, authorAvatar, time, category, servings, rating, 
   isFavoriteInitial, currentUser, onOpenRecipeModal 
@@ -36,20 +37,31 @@ const RecipeCard: React.FC<RecipeProps> = ({
   
   const [isFavorite, setIsFavorite] = useState(isFavoriteInitial || false);
   const navigate = useNavigate();
-   const handleAuthorClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); 
+
+  // 👈 LA FONCTION CORRIGÉE EST ICI
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const token = localStorage.getItem('token');
+    
+    // Sécurité contre les non-connectés et les faux "null"
+    if (!token || token === 'null' || token === 'undefined' || token === '') {
+      window.alert("Login to view chef profiles ! 👨‍🍳");
+      return;
+    }
+
     if (authorId) {
-      navigate(`/profile/${authorId}`); 
+      navigate(`/profile/${authorId}`);
     }
   };
 
   const handleHeartClick = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche d'ouvrir la recette quand on clique sur le cœur
+    
     if (!currentUser) {
       window.alert("Login to like this masterclass ! 🍝");
       return;
     }
-   
 
     // 1. Optimistic UI : On change le visuel TOUT DE SUITE
     const previousState = isFavorite;
@@ -74,7 +86,7 @@ const RecipeCard: React.FC<RecipeProps> = ({
       {variant === 'feed' && (
         <div 
           className="card-author-header" 
-          onClick={handleAuthorClick} // 
+          onClick={handleAuthorClick} 
           style={{ cursor: 'pointer' }} 
         >
           <img src={authorAvatar || 'https://via.placeholder.com/150'} alt={authorName} className="author-avatar-img" />

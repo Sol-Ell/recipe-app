@@ -169,6 +169,13 @@ export const getRecipeById = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération de la recette.", error: error.message });
   }
 };
+export const getAllRecipes = async(req, res)=>{
+  try{
+    const recipes = await Recipe.find().populate("author", "username").sort({createdAt: -1});
+    res.status("200").json(recipes);
+  } catch(error){
+    res.status("500").json({message: "Error retrieving stream"});
+  }};
 
 export const updateRecipe = async (req, res) => {
   try {

@@ -4,29 +4,44 @@ import axios from 'axios';
 
 // Mock Data for consistent search
 const FOOD_DATABASE = [
-  // Protéines & Viandes
-  'Chicken Breast', 'Ground Beef', 'Pork Chops', 'Bacon', 'Salmon', 'Tuna', 'Cod', 'Shrimp', 'Tofu', 'Tempeh', 'Lamb Leg', 'Turkey', 'Duck Breast', 'Sardines', 'Mussels', 'Eggs', 'Prosciutto', 'Sausage',
-  // Légumes
-  'Tomato', 'Garlic', 'Onion', 'Spinach', 'Broccoli', 'Carrot', 'Zucchini', 'Eggplant', 'Bell Pepper', 'Cucumber', 'Potato', 'Sweet Potato', 'Pumpkin', 'Kale', 'Asparagus', 'Mushrooms', 'Leek', 'Celery', 'Cauliflower', 'Green Beans', 'Peas', 'Radish', 'Beetroot', 'Artichoke', 'Brussels Sprouts', 'Corn',
+  // Proteins & Meats
+  'Chicken Breast', 'Ground Beef', 'Pork Chops', 'Bacon', 'Salmon', 'Tuna', 'Cod', 'Shrimp', 'Tofu', 'Tempeh', 'Lamb Leg', 'Turkey', 'Duck Breast', 'Sardines', 'Mussels', 'Eggs', 'Prosciutto', 'Sausage', 'Venison', 'Scallops', 'Beef Steak', 'Pork Belly', 'Clams', 'Crab', 'Lobster', 'Sea Bass', 'Trout', 'Quail Eggs', 'Seitan', 'Edamame',
+  
+  // Vegetables
+  'Tomato', 'Garlic', 'Onion', 'Spinach', 'Broccoli', 'Carrot', 'Zucchini', 'Eggplant', 'Bell Pepper', 'Cucumber', 'Potato', 'Sweet Potato', 'Pumpkin', 'Kale', 'Asparagus', 'Mushrooms', 'Leek', 'Celery', 'Cauliflower', 'Green Beans', 'Peas', 'Radish', 'Beetroot', 'Artichoke', 'Brussels Sprouts', 'Corn', 'Arugula', 'Bok Choy', 'Cabbage', 'Okra', 'Shallots', 'Ginger Root', 'Spring Onion', 'Fennel', 'Sweet Corn', 'Swiss Chard', 'Watercress', 'Radicchio', 'Endive', 'Daikon', 'Turnip', 'Parsnip',
+  
   // Fruits
-  'Apple', 'Banana', 'Lemon', 'Lime', 'Orange', 'Strawberry', 'Blueberry', 'Raspberry', 'Mango', 'Pineapple', 'Avocado', 'Pear', 'Grape', 'Watermelon', 'Peach', 'Cherry', 'Kiwi', 'Fig', 'Pomegranate',
-  // Produits Laitiers & Fromages
-  'Milk', 'Greek Yogurt', 'Heavy Cream', 'Butter', 'Parmesan', 'Mozzarella', 'Cheddar', 'Feta', 'Ricotta', 'Goat Cheese', 'Blue Cheese', 'Mascarpone', 'Sour Cream',
-  // Épicerie & Féculents
-  'Pasta', 'Rice', 'Quinoa', 'Flour', 'Sugar', 'Brown Sugar', 'Honey', 'Maple Syrup', 'Lentils', 'Chickpeas', 'Black Beans', 'Couscous', 'Bulgur', 'Breadcrumbs', 'Oats', 'Cornstarch', 'Yeast',
-  // Huiles & Condiments
-  'Olive Oil', 'Coconut Oil', 'Sesame Oil', 'Soy Sauce', 'Dijon Mustard', 'Mayonnaise', 'Ketchup', 'Sriracha', 'Apple Cider Vinegar', 'Balsamic Vinegar', 'Tomato Paste', 'Tahini', 'Pesto', 'Peanut Butter',
-  // Herbes & Épices
-  'Basil', 'Parsley', 'Cilantro', 'Thyme', 'Rosemary', 'Oregano', 'Cinnamon', 'Paprika', 'Cumin', 'Turmeric', 'Chili Flakes', 'Ginger', 'Nutmeg', 'Vanilla Extract', 'Star Anise', 'Cardamom'
+  'Apple', 'Banana', 'Lemon', 'Lime', 'Orange', 'Strawberry', 'Blueberry', 'Raspberry', 'Mango', 'Pineapple', 'Avocado', 'Pear', 'Grape', 'Watermelon', 'Peach', 'Cherry', 'Kiwi', 'Fig', 'Pomegranate', 'Papaya', 'Blackberry', 'Cranberry', 'Apricot', 'Plum', 'Nectarine', 'Melon', 'Passion Fruit', 'Lychee', 'Dragon Fruit', 'Coconut', 'Dates',
+  
+  // Dairy & Cheeses
+  'Milk', 'Greek Yogurt', 'Heavy Cream', 'Butter', 'Parmesan', 'Mozzarella', 'Cheddar', 'Feta', 'Ricotta', 'Goat Cheese', 'Blue Cheese', 'Mascarpone', 'Sour Cream', 'Cream Cheese', 'Gouda', 'Brie', 'Camembert', 'Swiss Cheese', 'Provolone', 'Halloumi', 'Cottage Cheese', 'Evaporated Milk', 'Condensed Milk',
+  
+  // Grains, Pasta & Flours
+  'Pasta', 'Rice', 'Quinoa', 'Flour', 'Whole Wheat Flour', 'Cornstarch', 'All-Purpose Flour', 'Breadcrumbs', 'Panko', 'Couscous', 'Bulgur', 'Oats', 'Barley', 'Polenta', 'Buckwheat', 'Rice Noodles', 'Egg Noodles', 'Spaghetti', 'Penne', 'Fusilli', 'Lasagna Sheets', 'Tortilla', 'Bagel', 'Baguette',
+  
+  // Nuts, Seeds & Legumes
+  'Almonds', 'Walnuts', 'Cashews', 'Peanuts', 'Pistachios', 'Pine Nuts', 'Chia Seeds', 'Pumpkin Seeds', 'Sunflower Seeds', 'Sesame Seeds', 'Flaxseeds', 'Chickpeas', 'Lentils', 'Black Beans', 'Kidney Beans', 'Cannellini Beans', 'Peanut Butter', 'Almond Butter', 'Tahini',
+  
+  // Oils, Vinegars & Condiments
+  'Olive Oil', 'Coconut Oil', 'Sesame Oil', 'Vegetable Oil', 'Sunflower Oil', 'Soy Sauce', 'Dijon Mustard', 'Yellow Mustard', 'Mayonnaise', 'Ketchup', 'Sriracha', 'Hoisin Sauce', 'Fish Sauce', 'Oyster Sauce', 'Worcestershire Sauce', 'Balsamic Vinegar', 'Apple Cider Vinegar', 'Rice Vinegar', 'White Wine Vinegar', 'Red Wine Vinegar', 'Tomato Paste', 'Pesto', 'Harissa', 'Miso Paste',
+  
+  // Herbs & Spices
+  'Basil', 'Parsley', 'Cilantro', 'Thyme', 'Rosemary', 'Oregano', 'Cinnamon', 'Paprika', 'Smoked Paprika', 'Cumin', 'Turmeric', 'Chili Flakes', 'Chili Powder', 'Nutmeg', 'Vanilla Extract', 'Star Anise', 'Cardamom', 'Coriander Seeds', 'Cloves', 'Bay Leaves', 'Dill', 'Mint', 'Saffron', 'Cayenne Pepper', 'Sumac', 'Garam Masala', 'Curry Powder',
+  
+  // Pantry & Sweeteners
+  'Sugar', 'Brown Sugar', 'Powdered Sugar', 'Honey', 'Maple Syrup', 'Agave Nectar', 'Cocoa Powder', 'Dark Chocolate', 'Chocolate Chips', 'Baking Powder', 'Baking Soda', 'Dry Yeast', 'Vanilla Bean', 'Gelatin', 'Chicken Broth', 'Beef Broth', 'Vegetable Broth', 'Coconut Milk'
 ];
 const CUISINE_STYLES = [
   'French', 'Italian', 'Spanish', 'Japanese', 'Mexican', 
   'Indian', 'Chinese', 'Thai', 'Greek', 'Moroccan', 
-  'Vietnamese', 'Korean', 'American', 'Middle Eastern', 'Mediterranean'
+  'Vietnamese', 'Korean', 'American', 'Middle Eastern', 'Mediterranean',
+  'Nordic', 'Brazilian', 'Turkish', 'Caribbean', 'Lebanese'
 ];
 const DIETARY_TYPES = [
   'Healthy', 'Veggie', 'Vegan', 'Meat Lover', 'Low Calories', 
-  'Gluten-Free', 'Keto', 'High Protein', 'Dairy-Free', 'Quick & Easy'
+  'Gluten-Free', 'Keto', 'High Protein', 'Dairy-Free', 'Quick & Easy',
+  'Low Carb', 'Organic', 'Paleo', 'Sugar-Free', 'Budget Friendly',
+  'Spicy', 'Comfort Food', 'Meal Prep', 'Nut-Free', 'Lactose-Free'
 ];
 const MEAL_TYPES = ['Breakfast', 'Snack', 'Lunch', 'Dinner', 'Dessert'];
 
@@ -150,6 +165,14 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       ingredients: [...recipe.ingredients, { id: Date.now(), name: '', qty: '', unit: 'L' }]
     });
   };
+  const removeIngredient = (id: number) => {
+  if (recipe.ingredients.length > 1) {
+    setRecipe({
+      ...recipe,
+      ingredients: recipe.ingredients.filter(ing => ing.id !== id)
+    });
+  }
+};
 
   // Subsection Logic (Max 3)
   const addSubsection = () => {
@@ -263,8 +286,23 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
                newIngs[idx].qty = e.target.value;
                setRecipe({...recipe, ingredients: newIngs});
             }} />
-            <select className="ing-unit"><option>L</option><option>g</option><option>pcs</option></select>
+            <select className="ing-unit"><option value="pcs">pcs</option>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="ml">ml</option>
+                <option value="l">l</option>
+                <option value="cup">cup</option>
+                <option value="tbsp">tbsp</option>
+                <option value="tsp">tsp</option></select>
+            <button 
+             className="remove-row-btn" 
+             onClick={() => removeIngredient(ing.id)}
+             title="Remove ingredient"
+            >
+              —
+          </button>
           </div>
+          
         ))}
         <button className="add-row-btn" onClick={addIngredient}>+</button>
       </div>

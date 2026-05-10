@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 
+
 export const getUserProfile = async (req, res) => {
   try {
     if (!req.user) {
