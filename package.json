@@ -8,9 +8,5 @@
     "test-back": "npm test --prefix backend",
     "test-front": "npm test --prefix frontend",
     "test-system": "npx playwright test"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.60.0",
-    "playwright": "^1.60.0"
   }
 }

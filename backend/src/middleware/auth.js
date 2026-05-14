@@ -11,7 +11,7 @@ export const protect = async (req, res, next) => {//express middleware which acc
             if (isBlacklisted) {
                 return res.status(401).json({ message: "Token revoked (disconnected)" });
             }
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret')//
+            const decoded = jwt.verify(token, process.env.JWT_SECRET)//
         
             req.user = await User.findById(decoded.id).select("-password")//To have the user info except the password. the "-" tells to MongoDB to return the information of user except the password field
         
