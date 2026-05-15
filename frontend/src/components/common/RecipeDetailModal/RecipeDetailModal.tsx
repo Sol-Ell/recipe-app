@@ -13,10 +13,16 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   if (!recipe) return null;
 
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
-  const steps = Array.isArray(recipe.steps) ? recipe.steps : [];
+  const rawSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
 
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+   const token = localStorage.getItem('token');
+    if (!token) {
+      window.alert("Login to view chef profiles ! 👨‍🍳");
+      return;
+    }
+
     const authorId = typeof recipe.author === 'object' ? recipe.author?._id : recipe.author;
     
     if (authorId) {
@@ -34,10 +40,29 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
 
   const displayTags = [...cuisineTags, ...dietaryTags, ...levelTags];
 
-  // S'il n'y a absolument aucun tag, on en met par défaut pour le design
   if (displayTags.length === 0) {
     displayTags.push("Gourmand", "Fait Maison");
   }
+
+  // 🔴 LA DÉFINITION DE PARSED SECTIONS DOIT ÊTRE ICI (Juste avant le return)
+  const parsedSections: { title: string, steps: string[] }[] = [];
+  let currentSection = { title: "Préparation", steps: [] as string[] };
+
+  rawSteps.forEach((step: string) => {
+    if (step.startsWith('SECTION:')) {
+      if (currentSection.steps.length > 0 || currentSection.title !== "Préparation") {
+        parsedSections.push(currentSection);
+      }
+      currentSection = { title: step.replace('SECTION:', '').trim(), steps: [] };
+    } else {
+      currentSection.steps.push(step);
+    }
+  });
+  
+  if (currentSection.steps.length > 0) {
+    parsedSections.push(currentSection);
+  }
+  // 🔴 FIN DE LA LOGIQUE
 
   return (
     <div className="rd-overlay" onClick={onClose}>
@@ -45,11 +70,13 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
         <button className="rd-close-btn" onClick={onClose}>&times;</button>
         
         <div className="rd-grid">
+          {/* GAUCHE : Visuel */}
           <div className="rd-image-side">
             <img src={recipe.imageUrl || recipe.image || 'https://via.placeholder.com/400'} alt={recipe.title} />
             <div className="rd-badge">{recipe.category || 'Gourmet'}</div>
           </div>
 
+          {/* DROITE : Infos */}
           <div className="rd-info-side">
             <header>
               <h1>{recipe.title}</h1>
@@ -69,7 +96,6 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 </p>
               </div>
 
-              {/* 👈 AFFICHAGE STRICT DES TAGS */}
               <div className="rd-tags-wrapper">
                 {displayTags.map((tag, i) => (
                   <span key={i} className="rd-tag-item">
@@ -92,14 +118,13 @@ const RecipeDetailModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
               </section>
 
               <section className="rd-instructions-container">
+                {/* On utilise parsedSections ici ! */}
                 {parsedSections.length > 0 ? (
                   parsedSections.map((section, idx) => (
                     <div key={idx} style={{ marginBottom: '20px' }}>
                       <h3 style={{ color: '#588157', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '10px' }}>
                         {section.title}
                       </h3>
-                      
-                      {/* Les étapes de cette sous-section */}
                       <div className="rd-step-section">
                         {section.steps.map((step: string, stepIdx: number) => (
                           <p key={stepIdx} style={{ marginBottom: '8px' }}>

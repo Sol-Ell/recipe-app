@@ -6,8 +6,15 @@ import RecipeDetailModal from '../../components/common/RecipeDetailModal/RecipeD
 import '../../index.css';
 import './Profile.css';
 
-const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican'];
-const DIETARY_TYPES = ['Healthy', 'Tasty', 'Veggie', 'Meat Lover', 'Low Calories'];
+const CUISINE_STYLES = ['French', 'Italian', 'Spanish', 'Japanese', 'Mexican', 
+  'Indian', 'Chinese', 'Thai', 'Greek', 'Moroccan', 
+  'Vietnamese', 'Korean', 'American', 'Middle Eastern', 'Mediterranean',
+  'Nordic', 'Brazilian', 'Turkish', 'Caribbean', 'Lebanese'];
+const DIETARY_TYPES = ['Healthy', 'Veggie', 'Vegan', 'Meat Lover', 'Low Calories', 
+  'Gluten-Free', 'Keto', 'High Protein', 'Dairy-Free', 'Quick & Easy',
+  'Low Carb', 'Organic', 'Paleo', 'Sugar-Free', 'Budget Friendly',
+  'Spicy', 'Comfort Food', 'Meal Prep', 'Nut-Free', 'Lactose-Free'];
+  
 const LEVEL = ['Beginner', 'Amateur', 'Intermediate', 'Advanced', 'Professional', 'Master Chef'];
 
 interface ProfileProps {

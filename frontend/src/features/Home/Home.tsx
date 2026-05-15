@@ -22,14 +22,20 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     const fetchAllRecipes = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token'); // Récupère le token stocké
+        const token = localStorage.getItem('token'); 
 
         const response = await axios.get('/api/recipes', {
           headers: {
-            Authorization: `Bearer ${token}` // Envoie le token au backend
+            Authorization: `Bearer ${token}` 
           }
         });
-        setRecipes(response.data);
+
+        // 👈 TRI IMMÉDIAT DU PLUS RÉCENT AU PLUS ANCIEN
+        const sortedRecipes = response.data.sort((a: any, b: any) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+
+        setRecipes(sortedRecipes);
       } catch (error: any) {
         console.error("Erreur lors du chargement des recettes:", error);
       } finally {
@@ -40,11 +46,19 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     fetchAllRecipes();
   }, []);
 
-  //  FILTERING FOR SECTIONS
-  // On filtre dynamiquement selon l'Enum de ton Recipe.js
-  const trendingRecipes = recipes.slice(0, 6); // The 4 most recent
-  const meatRecipes = recipes.filter(r => r.category === "Main Course").slice(0, 6);
-  const healthyRecipes = recipes.filter(r => r.category === "Vegetarian").slice(0, 6);
+  
+  const trendingRecipes = recipes.slice(0, 20); 
+
+ 
+  const meatRecipes = recipes.filter(r => 
+    (r.dietaryTags && r.dietaryTags.includes('Meat Lover')) || 
+    r.category === "Main Course"
+  ).slice(0, 20);
+
+  const healthyRecipes = recipes.filter(r => 
+    (r.dietaryTags && (r.dietaryTags.includes('Healthy') || r.dietaryTags.includes('Veggie') || r.dietaryTags.includes('Vegan'))) || 
+    r.category === "Vegetarian"
+  ).slice(0, 20);
 
   const handleCreateClick = () => {
     if (currentUser) {
@@ -54,7 +68,6 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     }
   };
 
-  // Fonction utilitaire pour éviter la répétition du rendu des grilles
   const renderRecipeGrid = (recipeList: any[]) => (
     <div className="home-recipes-grid">
       {recipeList.length > 0 ? (
@@ -62,13 +75,17 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
           <RecipeCard
             key={recipe._id}
             id={recipe._id}
+            authorId={typeof recipe.author === 'object' ? recipe.author?._id : recipe.author}
+            authorName={recipe.author?.username} // 👈 Ajout important pour le design
+            authorAvatar={recipe.author?.avatar}   // 👈 Ajout important pour le design
             variant="feed"
             title={recipe.title}
-            time={`${recipe.cookingTime} min`}
+            time={recipe.cookingTime ? `${recipe.cookingTime} min` : "30 min"}
             category={recipe.category}
             servings={recipe.servings}
-            image={recipe.imageUrl}
+            image={recipe.imageUrl || recipe.image}
             currentUser={currentUser}
+            isFavoriteInitial={recipe.likes?.includes(currentUser?._id)} // 👈 Ajout pour les likes
             onOpenRecipeModal={() => setSelectedRecipe(recipe)}
           />
         ))
