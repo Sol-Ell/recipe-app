@@ -33,7 +33,7 @@ describe('Profile Component', () => {
     });
   });
 
-  it('opens edit modal if it is own profile (Happy Path)', async () => {
+  it('opens edit mode if it is own profile (Happy Path)', async () => {
     mockedAxios.get.mockResolvedValueOnce({ data: [] });
 
     render(
@@ -46,7 +46,10 @@ describe('Profile Component', () => {
 
     await waitFor(() => expect(screen.getByText('Edit profile')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Edit profile'));
-    
-    expect(screen.getByText('Edit Profile')).toBeInTheDocument(); // Modal title
+
+    // After clicking Edit profile, the inline edit sections appear and button changes to Save
+    expect(screen.getByText('Save changes')).toBeInTheDocument();
+    expect(screen.getByText('Change Password')).toBeInTheDocument();
+    expect(screen.getByText('Change Email')).toBeInTheDocument();
   });
 });

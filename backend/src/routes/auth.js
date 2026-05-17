@@ -81,6 +81,6 @@ router.get('/profile/:id', getUserById);
 
 // Generate JWT token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {expiresIn: "30d"});//to store the user id 
+    return jwt.sign({ id }, process.env.JWT_SECRET, {expiresIn: "30d"});//to store the user id
 };
 export default router;

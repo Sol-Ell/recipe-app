@@ -6,9 +6,8 @@ export const getUserProfile = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({ message: "Access Denied: User not identified." });
     }
-    const user = await User.findById(req.user).select('-password');
+    const user = await User.findById(req.user._id).select('-password');
     if (!user) return res.status(404).json({ message: "User not found" });
-    
     res.status(200).json(user);
   } catch (error) {
     if (error.name === 'CastError') return res.status(400).json({ message: "Invalid ID format" });

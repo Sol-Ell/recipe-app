@@ -70,7 +70,7 @@ router.put("/", protect, async (req, res) => {
     const recipe = await Recipe.findById(req.body.recipeId);
     const user = await User.findById(req.user._id);
     if (!user.savedRecipes.includes(req.body.recipeId)) {
-      user.savedRecipes.push(recipe);
+      user.savedRecipes.push(recipe._id);
       await user.save();
     }
     res.json({ savedRecipes: user.savedRecipes });

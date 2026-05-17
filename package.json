@@ -6,6 +6,7 @@
     "start-back": "npm start --prefix backend",
     "start-front": "npm start --prefix frontend",
     "test-back": "npm test --prefix backend",
-    "test-front": "npm test --prefix frontend"
+    "test-front": "npm test --prefix frontend",
+    "test-system": "npx playwright test"
   }
 }
